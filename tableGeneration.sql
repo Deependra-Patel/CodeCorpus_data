@@ -30,10 +30,12 @@ create type personal_info as(
 ); 
 
 create table users(
-	userid varchar(20) primary key,
+	userid serial primary key,
+	handle varchar(30) unique not null,
+	passwd varchar(100),
 	rank numeric,
-	personal personal_info,
-	role boolean
+	role boolean,
+	personal personal_info 
 );
 create table tags(
 	tagid numeric primary key,
@@ -43,7 +45,7 @@ create table tags(
 
 --Relation tables here
 create table attempted(
-	userid varchar(20) references users,
+	userid int references users,
 	code varchar(50) references problems,
 	solved boolean,
 	primary key (userid, code)
@@ -56,12 +58,12 @@ create table problems_tags(
 );
 
 create table users_interests(
-	userid varchar(20) references users,
+	userid serial references users,
 	tagid numeric references tags
 );
 
 create table followers(
-	follower varchar(20) references users(userid),
-	followed varchar(20) references users(userid),
+	follower serial references users(userid),
+	followed serial references users(userid),
 	primary key(follower, followed)		
 );

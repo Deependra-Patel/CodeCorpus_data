@@ -1,0 +1,1 @@
+insert into users(userid, handle, passwd, rank, role, personal) values (1, 'deependrapatel', 'bang', 1, FALSE, ROW('Deependra', '1994-09-21','india', 'pateldeependra06@gmail.com', 'iitb'));
