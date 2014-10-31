@@ -10,14 +10,14 @@ drop type personal_info;
 
 create type stats as(
 	solved numeric(5),
-	attempted numeric(5)
+	accuracy numeric(5,2)
 );
 create table problems(
 	code varchar(50) primary key,
 	name varchar(200),
 	link varchar(300),
 	doa date,
-	difficulty numeric(1,0),
+	difficulty varchar(20),
 	statistic stats
 );
 
@@ -45,25 +45,25 @@ create table tags(
 
 --Relation tables here
 create table attempted(
-	userid int references users,
-	code varchar(50) references problems,
+	userid int references users ON DELETE CASCADE,
+	code varchar(50) references problems ON DELETE CASCADE,
 	solved boolean,
 	primary key (userid, code)
 );
 
 create table problems_tags(
-	code varchar(50) references problems,
-	tagid numeric references tags,
+	code varchar(50) references problems ON DELETE CASCADE,
+	tagid numeric references tags ON DELETE CASCADE,
 	primary key(code, tagid)
 );
 
 create table users_interests(
-	userid serial references users,
-	tagid numeric references tags
+	userid serial references users ON DELETE CASCADE,
+	tagid numeric references tags ON DELETE CASCADE
 );
 
 create table followers(
-	follower serial references users(userid),
-	followed serial references users(userid),
+	follower serial references users(userid) ON DELETE CASCADE,
+	followed serial references users(userid) ON DELETE CASCADE,
 	primary key(follower, followed)		
 );

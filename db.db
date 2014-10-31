@@ -1,0 +1,6417 @@
+--
+-- PostgreSQL database dump
+--
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SET check_function_bodies = false;
+SET client_min_messages = warning;
+
+--
+-- Name: plpgsql; Type: EXTENSION; Schema: -; Owner: 
+--
+
+CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;
+
+
+--
+-- Name: EXTENSION plpgsql; Type: COMMENT; Schema: -; Owner: 
+--
+
+COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
+
+
+SET search_path = public, pg_catalog;
+
+--
+-- Name: personal_info; Type: TYPE; Schema: public; Owner: db120050032
+--
+
+CREATE TYPE personal_info AS (
+	name character varying(100),
+	dob date,
+	region character varying(100),
+	email_id character varying(50),
+	institution character varying(200)
+);
+
+
+ALTER TYPE public.personal_info OWNER TO db120050032;
+
+--
+-- Name: stats; Type: TYPE; Schema: public; Owner: db120050032
+--
+
+CREATE TYPE stats AS (
+	solved numeric(5,0),
+	accuracy numeric(5,2)
+);
+
+
+ALTER TYPE public.stats OWNER TO db120050032;
+
+SET default_tablespace = '';
+
+SET default_with_oids = false;
+
+--
+-- Name: attempted; Type: TABLE; Schema: public; Owner: db120050032; Tablespace: 
+--
+
+CREATE TABLE attempted (
+    userid integer NOT NULL,
+    code character varying(50) NOT NULL,
+    solved boolean
+);
+
+
+ALTER TABLE public.attempted OWNER TO db120050032;
+
+--
+-- Name: followers; Type: TABLE; Schema: public; Owner: db120050032; Tablespace: 
+--
+
+CREATE TABLE followers (
+    follower integer NOT NULL,
+    followed integer NOT NULL
+);
+
+
+ALTER TABLE public.followers OWNER TO db120050032;
+
+--
+-- Name: followers_followed_seq; Type: SEQUENCE; Schema: public; Owner: db120050032
+--
+
+CREATE SEQUENCE followers_followed_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.followers_followed_seq OWNER TO db120050032;
+
+--
+-- Name: followers_followed_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: db120050032
+--
+
+ALTER SEQUENCE followers_followed_seq OWNED BY followers.followed;
+
+
+--
+-- Name: followers_follower_seq; Type: SEQUENCE; Schema: public; Owner: db120050032
+--
+
+CREATE SEQUENCE followers_follower_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.followers_follower_seq OWNER TO db120050032;
+
+--
+-- Name: followers_follower_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: db120050032
+--
+
+ALTER SEQUENCE followers_follower_seq OWNED BY followers.follower;
+
+
+--
+-- Name: problems; Type: TABLE; Schema: public; Owner: db120050032; Tablespace: 
+--
+
+CREATE TABLE problems (
+    code character varying(50) NOT NULL,
+    name character varying(200),
+    link character varying(300),
+    doa date,
+    difficulty character varying(20),
+    statistic stats
+);
+
+
+ALTER TABLE public.problems OWNER TO db120050032;
+
+--
+-- Name: problems_tags; Type: TABLE; Schema: public; Owner: db120050032; Tablespace: 
+--
+
+CREATE TABLE problems_tags (
+    code character varying(50) NOT NULL,
+    tagid numeric NOT NULL
+);
+
+
+ALTER TABLE public.problems_tags OWNER TO db120050032;
+
+--
+-- Name: tags; Type: TABLE; Schema: public; Owner: db120050032; Tablespace: 
+--
+
+CREATE TABLE tags (
+    tagid numeric NOT NULL,
+    name character varying(100),
+    description character varying(1000)
+);
+
+
+ALTER TABLE public.tags OWNER TO db120050032;
+
+--
+-- Name: users; Type: TABLE; Schema: public; Owner: db120050032; Tablespace: 
+--
+
+CREATE TABLE users (
+    userid integer NOT NULL,
+    handle character varying(30) NOT NULL,
+    passwd character varying(100),
+    rank numeric,
+    role boolean,
+    personal personal_info
+);
+
+
+ALTER TABLE public.users OWNER TO db120050032;
+
+--
+-- Name: users_interests; Type: TABLE; Schema: public; Owner: db120050032; Tablespace: 
+--
+
+CREATE TABLE users_interests (
+    userid integer NOT NULL,
+    tagid numeric
+);
+
+
+ALTER TABLE public.users_interests OWNER TO db120050032;
+
+--
+-- Name: users_interests_userid_seq; Type: SEQUENCE; Schema: public; Owner: db120050032
+--
+
+CREATE SEQUENCE users_interests_userid_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.users_interests_userid_seq OWNER TO db120050032;
+
+--
+-- Name: users_interests_userid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: db120050032
+--
+
+ALTER SEQUENCE users_interests_userid_seq OWNED BY users_interests.userid;
+
+
+--
+-- Name: users_userid_seq; Type: SEQUENCE; Schema: public; Owner: db120050032
+--
+
+CREATE SEQUENCE users_userid_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.users_userid_seq OWNER TO db120050032;
+
+--
+-- Name: users_userid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: db120050032
+--
+
+ALTER SEQUENCE users_userid_seq OWNED BY users.userid;
+
+
+--
+-- Name: follower; Type: DEFAULT; Schema: public; Owner: db120050032
+--
+
+ALTER TABLE ONLY followers ALTER COLUMN follower SET DEFAULT nextval('followers_follower_seq'::regclass);
+
+
+--
+-- Name: followed; Type: DEFAULT; Schema: public; Owner: db120050032
+--
+
+ALTER TABLE ONLY followers ALTER COLUMN followed SET DEFAULT nextval('followers_followed_seq'::regclass);
+
+
+--
+-- Name: userid; Type: DEFAULT; Schema: public; Owner: db120050032
+--
+
+ALTER TABLE ONLY users ALTER COLUMN userid SET DEFAULT nextval('users_userid_seq'::regclass);
+
+
+--
+-- Name: userid; Type: DEFAULT; Schema: public; Owner: db120050032
+--
+
+ALTER TABLE ONLY users_interests ALTER COLUMN userid SET DEFAULT nextval('users_interests_userid_seq'::regclass);
+
+
+--
+-- Data for Name: attempted; Type: TABLE DATA; Schema: public; Owner: db120050032
+--
+
+COPY attempted (userid, code, solved) FROM stdin;
+27	TEST	t
+27	DOUBLE	t
+56	FORGETPW	t
+27	HS08TEST	t
+27	ROWCOLOP	t
+27	BUY1GET1	t
+56	CHEFZOT	t
+27	SNAPE	t
+27	ERROR	t
+27	PLZLYKME	t
+27	CAKE1AM	t
+56	GUESS	t
+27	SUBMIN	t
+27	LCPESY	t
+27	REMISS	t
+27	KINGSHIP	t
+27	WALK	t
+27	PROSUM	t
+27	DIVIDING	t
+27	CNPIIM	t
+4	TWTCLOSE	t
+4	COINS	t
+4	SNAPE	t
+4	GCD2	t
+4	OJUMPS	t
+4	RRSTONE	t
+4	ANUUND	t
+4	ANUDTC	t
+27	POTATOES	t
+4	GUESS	t
+4	CHEFZOT	t
+27	BINTREE	t
+27	ADIGIT	t
+27	OJUMPS	t
+27	RRSTONE	t
+1	PPTEST	t
+1	RRMATRIX	t
+27	GUESS	t
+1	LEBAMBOO	t
+27	CHEFZOT	t
+1	SPOTWO	t
+1	ERROR	t
+1	COLARR	t
+1	LPAIR	t
+1	BINTOUR	t
+1	GUESS	t
+1	RETPO	t
+1	CLETAB	t
+1	TREEGAME	t
+1	UASEQ	t
+1	GRID	t
+1	PRLADDU	t
+1	ANUARM	t
+3	HS08TEST	t
+27	FROGV	t
+27	SGARDEN	t
+27	CSUB	t
+27	GERALD09	t
+27	RETPO	t
+56	CSUB	t
+27	ROTATION	t
+27	CHEFLR	t
+27	CHEFGR	t
+27	PRLADDU	t
+56	RETPO	t
+1	GERALD03	t
+56	FROGV	t
+1	ANUUND	t
+1	PPNUM	t
+1	GERALD05	t
+1	ANUDTC	t
+28	MONEY	t
+1	ANUBGC	t
+1	CHEFINV	t
+1	WW2	t
+57	HOLES	t
+1	GERALD04	t
+28	ARRAYTRM	t
+28	CONFLIP	t
+57	GERALD04	t
+30	MAXCOUNT	t
+1	SEATRSF	t
+1	MAANDI	t
+1	HELPLIRA	t
+30	CLMBSTRS	t
+30	BUY1GET1	t
+30	APPROX	t
+30	TOTR	t
+1	SDSQUARE	t
+1	JOHNY	t
+1	PRETNUM	t
+1	MCHAIRS	t
+1	PLZLYKME	t
+1	LCPESY	t
+1	DRGHTS	t
+1	SUBMIN	t
+1	TWODOGS	t
+1	REMISS	t
+1	KINGSHIP	t
+1	WALK	t
+1	MIKE3	t
+1	PROSUM	t
+1	ANUGCD	t
+1	TMSLT	t
+1	FUNC	t
+1	DIGJUMP	t
+1	LEBLOCKS	t
+1	MAXPR	t
+1	CHEFZOT	t
+1	FORGETPW	t
+1	LUCKG	t
+1	FROGV	t
+1	CSUB	t
+1	DISHOWN	t
+1	SGARDEN	t
+1	LEPAINT	t
+1	PRGIFT	t
+1	TSHIRTS	t
+1	CRAWA	t
+1	MOU2H	t
+1	REVERSE	t
+1	PERMSUFF	t
+1	CHEFLR	t
+1	FLOORI4	t
+1	ROTATION	t
+1	RAINBOWB	t
+1	SUBGCD	t
+1	FATCHEF	t
+1	CHEFSQUA	t
+1	CHEFGR	t
+1	PRPOTION	t
+1	ANUWTA	t
+1	ANUMLA	t
+3	FCTRL	t
+3	FCTRL2	t
+3	TEST	t
+30	LELEMON	t
+30	HELLO	t
+30	SPCANDY	t
+30	RIGHTRI	t
+30	CAOS1	t
+5	TEST	t
+5	PERMUT2	t
+5	TLG	t
+5	CIELAB	t
+5	SNAPE	t
+5	COMM3	t
+5	POTATOES	t
+5	ANUUND	t
+5	FCTRL	t
+5	STONES	t
+5	BUYING2	t
+5	MARBLES	t
+5	INTEST	t
+5	COOLING	t
+5	PRPALIN	t
+5	LEPERMUT	t
+5	REMISS	t
+5	CONFLIP	t
+5	LUCKYSTR	t
+5	ERROR	t
+5	TSORT	t
+5	NOCODING	t
+5	ANUWTA	t
+5	HOLES	t
+5	DOUBLE	t
+5	CLEANUP	t
+5	JOHNY	t
+5	CIELRCPT	t
+5	MAXCOUNT	t
+5	WALK	t
+5	CARVANS	t
+5	LECANDY	t
+5	ANUARM	t
+5	HS08TEST	t
+5	SUMTRIAN	t
+5	MUFFINS3	t
+5	EASYPROB	t
+5	RECIPE	t
+5	TOTR	t
+5	HOTEL	t
+5	RRCOPY	t
+5	FCTRL2	t
+5	HORSES	t
+5	RESQ	t
+5	PRIME1	t
+5	CSUB	t
+30	SPOONS	t
+5	CHEFGR	t
+6	J7	t
+7	HOLES	t
+7	DOUBLE	t
+7	MAANDI	t
+7	FCTRL	t
+7	NUMGAME	t
+7	ANUDTC	t
+7	INTEST	t
+7	MUFFINS3	t
+7	TEST	t
+7	HS08TEST	t
+7	POTATOES	t
+8	HS08TEST	t
+8	INTEST	t
+8	FCTRL2	t
+8	FCTRL	t
+8	HOLES	t
+8	WALK	t
+8	TEST	t
+8	TSORT	t
+8	ERROR	t
+30	CAOS2	t
+30	INTEG	t
+8	CHEFGR	t
+8	PRPOTION	t
+30	COOLGUYS	t
+30	LEBAMBOO	t
+30	HELPLIRA	t
+30	MAANDI	t
+30	ARRGAME2	t
+30	SDSQUARE	t
+30	SPOTWO	t
+30	MCHAIRS	t
+30	JOHNY	t
+57	DIVIDING	t
+15	TEST	t
+15	HS08TEST	t
+15	INTEST	t
+15	MAXCOUNT	t
+15	DAILY	t
+16	LELEMON	t
+16	SPCANDY	t
+16	SDSQUARE	t
+16	JOHNY	t
+16	MCHAIRS	t
+16	SPOTWO	t
+57	TEST	t
+16	ALEXNUMB	t
+16	MARBLEGF	t
+16	BINTREE	t
+16	POTATOES	t
+16	ADIGIT	t
+16	OJUMPS	t
+16	RRSTONE	t
+16	COMPILER	t
+17	PERMUT2	t
+17	TEST	t
+17	CHEFLR	t
+17	PRPOTION	t
+17	CHEFGR	t
+17	PRLADDU	t
+18	RETPO	t
+18	CSUB	t
+19	HS08TEST	t
+19	TEST	t
+32	HS08TEST	t
+32	INTEST	t
+32	FCTRL	t
+32	TEST	t
+32	CHEFZOT	t
+19	MCHAIRS	t
+19	SDSQUARE	t
+19	SPOTWO	t
+19	JOHNY	t
+20	FCTRL	t
+20	FCTRL2	t
+20	TLG	t
+33	HS08TEST	t
+20	COINS	t
+33	FCTRL2	t
+20	NUMGAME	t
+20	RECIPE	t
+33	TSORT	t
+33	MARCHA1	t
+20	PERMUT2	t
+20	NAME2	t
+20	DIVIDING	t
+20	PPTEST	t
+20	TSORT	t
+20	ONP	t
+20	COOLING	t
+33	CIELAB	t
+33	CLEANUP	t
+20	TREE	t
+20	DECSTR	t
+20	NUMGAME2	t
+33	CIELRCPT	t
+20	EASYPROB	t
+20	TACHSTCK	t
+20	TWTCLOSE	t
+20	SPCANDY	t
+20	MAXDIFF	t
+33	CANDLE	t
+33	CARVANS	t
+20	INTEST	t
+20	HS08TEST	t
+33	MARCHA2	t
+33	CONFLIP	t
+33	HOTEL	t
+20	DOUBLE	t
+20	CANDLE	t
+20	LECANDY	t
+20	CARVANS	t
+33	LAPIN	t
+33	BESTBATS	t
+20	MGCRNK	t
+20	TOTR	t
+33	POINTS	t
+20	TEST	t
+33	TAVISUAL	t
+20	HOLES	t
+20	MAXCOUNT	t
+33	NAME2	t
+33	ANUDTC	t
+20	MUFFINS3	t
+20	SUMTRIAN	t
+20	PRIME1	t
+20	BUY1GET1	t
+20	MARCHA1	t
+20	CHAORNOT	t
+20	WSTRING	t
+20	LAPIN	t
+20	PREDICT	t
+20	CHRECT	t
+20	JOHNY	t
+20	ALEXNUMB	t
+20	ERROR	t
+20	PLZLYKME	t
+33	ATTIC	t
+20	REMISS	t
+33	INTEST	t
+33	SUMTRIAN	t
+20	OJUMPS	t
+20	COMPILER	t
+20	RRSTONE	t
+20	GUESS	t
+20	DIGJUMP	t
+20	CHEFZOT	t
+33	NUMGAME	t
+20	CSUB	t
+20	RETPO	t
+20	FROGV	t
+20	RRSUM	t
+20	RRCOPY	t
+33	PRPALIN	t
+20	PRGIFT	t
+33	OJUMPS	t
+33	BUY1GET1	t
+20	PRLADDU	t
+20	PRPOTION	t
+20	FATCHEF	t
+20	CHEFGR	t
+33	GCD2	t
+20	ANUWTA	t
+33	LEBOMBS	t
+21	PRGIFT	t
+22	FCTRL	t
+22	BINTREE	t
+33	HORSES	t
+22	FCTRL2	t
+33	BUYING2	t
+22	BUYING2	t
+22	TEST	t
+22	PPTEST	t
+22	POTATOES	t
+22	RRSTONE	t
+22	NAME2	t
+22	NAME1	t
+22	LAPIN	t
+22	CAOS1	t
+22	JOHNY	t
+22	MCHAIRS	t
+22	SDSQUARE	t
+22	SPOTWO	t
+22	ALEXNUMB	t
+22	CHODE	t
+22	ERROR	t
+22	PLZLYKME	t
+22	LCPESY	t
+22	SUBMIN	t
+22	WALK	t
+22	OJUMPS	t
+22	ANUUND	t
+22	CHEFZOT	t
+22	GUESS	t
+22	FORGETPW	t
+22	DIGJUMP	t
+22	CSUB	t
+22	DISHOWN	t
+22	RETPO	t
+22	FROGV	t
+22	SGARDEN	t
+22	PRGIFT	t
+22	CRAWA	t
+22	SUBGCD	t
+22	GRID	t
+33	REMISS	t
+33	STONES	t
+33	AMSGAME1	t
+22	PRLADDU	t
+22	CHEFGR	t
+22	FATCHEF	t
+22	PRPOTION	t
+23	HS08TEST	t
+23	TEST	t
+23	POTATOES	t
+23	SNAPE	t
+24	LUCKY5	t
+24	MAXCOUNT	t
+24	LECANDY	t
+24	RESQ	t
+24	HOMDEL	t
+24	DRANGE	t
+24	LUKYDRIV	t
+24	LEBOMBS	t
+24	CKISSHUG	t
+24	HORSES	t
+24	CVOTE	t
+24	LECARDS	t
+24	EFFPAINT	t
+24	BUY1GET1	t
+24	CLMBSTRS	t
+33	ANUUND	t
+33	SPCANDY	t
+33	TOTR	t
+24	NAME2	t
+24	NAME1	t
+24	MSTICK	t
+24	RIGHTRI	t
+24	CAOS2	t
+24	CAOS1	t
+24	LEEXAMS	t
+24	INTEG	t
+24	SPOONS	t
+24	COOLGUYS	t
+24	MARBLEGF	t
+24	CUBE	t
+24	RECTQUER	t
+24	CHODE	t
+24	REIGN	t
+24	ALEXNUMB	t
+24	SMPAINT	t
+24	FGFS	t
+24	MTRICK	t
+24	ERROR	t
+24	PLZLYKME	t
+24	PROSUM	t
+24	BINTOUR	t
+24	WALK	t
+24	MIKE3	t
+24	BINTREE	t
+24	CNPIIM	t
+24	POTATOES	t
+24	TANGDIV	t
+24	ADIGIT	t
+24	SEAPERM	t
+24	OJUMPS	t
+24	RRSTONE	t
+24	COMPILER	t
+24	CHEFBM	t
+33	DIVIDING	t
+33	ALEXNUMB	t
+26	CHEFZOT	t
+26	PRGIFT	t
+26	ROTATION	t
+33	FCTRL	t
+33	TLG	t
+33	COOLING	t
+33	EASYPROB	t
+57	HELLO	t
+33	LECANDY	t
+33	DECSTR	t
+33	RAINBOWB	t
+33	NUMGAME2	t
+33	CHEFLUCK	t
+33	JOHNY	t
+33	RESQ	t
+33	NOTATRI	t
+33	RRECIPE	t
+33	ERROR	t
+33	LUCKY5	t
+33	TACHSTCK	t
+33	TEST	t
+33	HOLES	t
+33	PERMUT2	t
+33	DOUBLE	t
+33	MUFFINS3	t
+33	MAXCOUNT	t
+33	NUKES	t
+33	RECIPE	t
+33	PCYCLE	t
+33	VOTERS	t
+33	J7	t
+33	LEPERMUT	t
+33	SNAPE	t
+33	DRAGNXOR	t
+33	RIGHTRI	t
+33	TIDRICE	t
+33	MAXDIFF	t
+33	NOCODING	t
+33	COMMUTE	t
+33	CRAWA	t
+33	PRGIFT	t
+57	LECANDY	t
+57	DIGJUMP	t
+33	ROTATION	t
+33	CHEFLR	t
+33	PRLADDU	t
+33	PRPOTION	t
+33	FATCHEF	t
+33	CHEFGR	t
+34	TEST	t
+34	ONP	t
+34	COOLING	t
+34	FCTRL	t
+34	PERMUT2	t
+34	DOUBLE	t
+34	FCTRL2	t
+34	TLG	t
+34	EASYPROB	t
+34	TSORT	t
+34	HS08TEST	t
+34	HOLES	t
+34	NUMGAME	t
+34	BINTREE	t
+34	ADIGIT	t
+34	POTATOES	t
+34	RRSTONE	t
+34	OJUMPS	t
+35	PREDICT	t
+35	LAPIN	t
+36	HS08TEST	t
+36	INTEST	t
+36	ANUWTA	t
+36	FCTRL2	t
+36	TEST	t
+36	FCTRL	t
+36	ANUARM	t
+57	LAPIN	t
+57	RIGHTRI	t
+57	NEWSCH	t
+57	SPCANDY	t
+57	HELPLIRA	t
+57	LEBAMBOO	t
+57	MAANDI	t
+39	SNAPE	t
+39	MAXDIFF	t
+39	CHRECT	t
+39	WALK	t
+39	OJUMPS	t
+39	CSUB	t
+40	HORSES	t
+40	COINS	t
+40	FCTRL2	t
+40	AMIFIB	t
+40	RRECIPE	t
+40	SPCANDY	t
+40	LUCKY1	t
+40	MAXCOUNT	t
+40	LUCKY5	t
+40	WCOUNT	t
+40	CHEFLUCK	t
+40	LUCKYSTR	t
+40	RESQ	t
+40	CAKEDOOM	t
+40	LECANDY	t
+40	CKISSHUG	t
+40	CARVANS	t
+40	DRGNBOOL	t
+40	CONFLIP	t
+40	GRANAMA	t
+40	AMMEAT	t
+40	PREDICT	t
+40	LAPIN	t
+40	CHRECT	t
+40	KPRIME	t
+40	PROB	t
+40	LELEMON	t
+40	HELLO	t
+57	SDSQUARE	t
+57	SEAVEC	t
+40	MARBLEGF	t
+40	ALEXNUMB	t
+40	CHODE	t
+40	CHEFZOT	t
+40	GUESS	t
+41	UASEQ	t
+41	CHEFLR	t
+41	ROTATION	t
+41	RAINBOWB	t
+42	HS08TEST	t
+42	TEST	t
+57	JOHNY	t
+57	MCHAIRS	t
+42	SNAPE	t
+42	OJUMPS	t
+42	RRSTONE	t
+42	CHEFGR	t
+43	TEST	t
+43	HS08TEST	t
+43	HOLES	t
+43	INTEST	t
+43	OJUMPS	t
+43	RRSTONE	t
+43	ANUUND	t
+57	PLZLYKME	t
+44	WTHINGS	t
+44	ANUTDP	t
+44	AMSGAME2	t
+44	MARBLEGF	t
+44	HS08TEST	t
+44	ANUBGC	t
+44	ALETHIO	t
+44	GALACTIK	t
+44	MUFFINS3	t
+44	ARRAYTRM	t
+44	TSORT	t
+44	PALIN	t
+44	PPTEST	t
+44	ANUGCD	t
+44	AMSGAME1	t
+44	LAPIN	t
+44	WSTRING	t
+44	PREDICT	t
+44	CHAORNOT	t
+44	LEMOUSE	t
+44	ATTIC	t
+44	PROB	t
+44	CHRECT	t
+44	TAAPLUSB	t
+44	TACHSTCK	t
+44	SPCANDY	t
+44	LELEMON	t
+44	HELLO	t
+44	RIGHTRI	t
+44	LEEXAMS	t
+44	CAOS1	t
+44	COOLGUYS	t
+44	CAOS2	t
+44	SPOONS	t
+44	INTEG	t
+44	LEBAMBOO	t
+44	ARRGAME2	t
+44	SEATRSF	t
+44	MAANDI	t
+44	HELPLIRA	t
+44	PPNUM	t
+57	LCPESY	t
+57	SUBMIN	t
+44	RECTQUER	t
+44	REIGN	t
+44	CHODE	t
+44	ALEXNUMB	t
+44	CUBE	t
+44	FGFS	t
+44	PLZLYKME	t
+44	MTRICK	t
+44	SEAGRP	t
+44	ERROR	t
+44	CAKE1AM	t
+44	COLARR	t
+44	SUBMIN	t
+44	DRGHTS	t
+44	LCPESY	t
+44	LEMOVIE	t
+44	TWODOGS	t
+44	KINGSHIP	t
+44	LPAIR	t
+44	REMISS	t
+44	ANUCBC	t
+44	CNPIIM	t
+44	POTATOES	t
+44	TANGDIV	t
+44	BINTREE	t
+44	ADIGIT	t
+44	COMPILER	t
+44	RRSTONE	t
+44	LEBALONS	t
+44	OJUMPS	t
+44	CHEFBM	t
+44	ANUDTC	t
+44	ANUUND	t
+44	LEBLOCKS	t
+44	GUESS	t
+44	DIGJUMP	t
+44	CHEFZOT	t
+44	MAXPR	t
+44	FUNC	t
+44	FORGETPW	t
+44	PNTNG	t
+44	FLAGS	t
+44	KNPSK	t
+44	TSHIRTS	t
+44	PERMSUFF	t
+44	TREEGAME	t
+44	FLOORI4	t
+44	SUBGCD	t
+44	GRID	t
+44	SUBLCM	t
+44	SEATSR	t
+44	ANUWTA	t
+44	ANUARM	t
+44	ANUMLA	t
+57	BINTREE	t
+57	ADIGIT	t
+57	SEAPERM	t
+57	POTATOES	t
+46	CLETAB	t
+46	PRGIFT	t
+46	TSHIRTS	t
+46	REVERSE	t
+46	CRAWA	t
+46	RAINBOWB	t
+46	CHEFLR	t
+46	ROTATION	t
+47	LUCKY10	t
+47	DRGNBOOL	t
+47	DIAMOND	t
+47	MAXCOMP	t
+47	NEWSCH	t
+48	FCTRL	t
+48	ONP	t
+48	COOLING	t
+48	CLEANUP	t
+48	CIELRCPT	t
+48	LECANDY	t
+48	TEST	t
+48	FCTRL2	t
+48	PERMUT2	t
+48	DOUBLE	t
+48	RECIPE	t
+48	MAXCOUNT	t
+48	HS08TEST	t
+48	TSORT	t
+48	TLG	t
+48	PRPALIN	t
+48	CIELAB	t
+48	MUFFINS3	t
+48	INTEST	t
+48	SUMTRIAN	t
+48	NUMGAME	t
+48	NUKES	t
+48	CANDLE	t
+48	LCPESY	t
+48	RETPO	t
+49	CAOS1	t
+49	CAOS2	t
+49	CHODE	t
+49	ALEXNUMB	t
+50	RIGHTRI	t
+50	RRCODE	t
+57	RRSTONE	t
+57	COMPILER	t
+50	ALEXNUMB	t
+50	MARBLEGF	t
+50	SUBMIN	t
+50	LCPESY	t
+57	OJUMPS	t
+51	WALK	t
+57	ANUUND	t
+57	GUESS	t
+57	FORGETPW	t
+57	CHEFZOT	t
+57	GERALD09	t
+52	MAXDIFF	t
+52	NAME2	t
+52	ERROR	t
+52	LCPESY	t
+52	BINTREE	t
+52	POTATOES	t
+52	CHEFZOT	t
+52	RRSUM	t
+57	CSUB	t
+57	RETPO	t
+53	CANDLE	t
+57	FROGV	t
+57	PRGIFT	t
+57	CRAWA	t
+58	MUFFINS3	t
+53	CHEFLUCK	t
+53	COOLING	t
+53	MUFFINS3	t
+59	TEST	t
+59	HS08TEST	t
+53	CARVANS	t
+59	SPOON	t
+53	ERROR	t
+53	CONFLIP	t
+60	ATTIC	t
+60	PPNUM	t
+60	LAPIN	t
+60	LELEMON	t
+60	SPCANDY	t
+60	SPOONS	t
+60	CAOS1	t
+60	CAOS2	t
+60	INTEG	t
+60	PPTEST	t
+60	JOHNY	t
+60	MCHAIRS	t
+53	ANUWTA	t
+53	HS08TEST	t
+53	NUMGAME	t
+60	SDSQUARE	t
+61	CHEFGR	t
+62	FCTRL	t
+62	TEST	t
+62	INTEST	t
+62	HS08TEST	t
+62	NUMGAME	t
+53	LECANDY	t
+62	DOUBLE	t
+63	HIGH	t
+63	G5	t
+63	A1	t
+64	CARVANS	t
+64	COINS	t
+64	RRECIPE	t
+53	EASYPROB	t
+53	SPCANDY	t
+53	RRCOPY	t
+53	TEST	t
+53	INTEST	t
+64	WSTRING	t
+64	FCTRL	t
+64	DELISH	t
+64	LUCKY5	t
+53	CIELAB	t
+64	WCOUNT	t
+64	MAXCOUNT	t
+64	DOUBLE	t
+64	DIVPAIR	t
+64	STONES	t
+64	CHEFHOME	t
+64	CHEFLUCK	t
+64	TWSTR	t
+64	LECANDY	t
+53	TSORT	t
+53	SPOON	t
+64	RESQ	t
+53	RECIPE	t
+53	TMSLT	t
+64	BUYING2	t
+64	TOURMAP	t
+53	REMISS	t
+64	JABO	t
+64	CONFLIP	t
+53	HOLES	t
+53	FCTRL	t
+64	CLMBSTRS	t
+64	APPROX	t
+64	TOTR	t
+65	INTEST	t
+65	TEST	t
+53	CIELRCPT	t
+53	FCTRL2	t
+53	BUY1GET1	t
+53	HORSES	t
+53	JOHNY	t
+53	ALEXNUMB	t
+65	HS08TEST	t
+65	FCTRL	t
+65	TOTR	t
+65	APPROX	t
+65	LEVY	t
+65	FCBARCA	t
+65	MAXDIFF	t
+65	AMMEAT	t
+65	AMMEAT2	t
+65	NAME2	t
+65	NAME1	t
+53	LAPIN	t
+65	AMSGAME1	t
+65	PREDICT	t
+53	VOTERS	t
+53	RIGHTRI	t
+65	CHAORNOT	t
+65	LAPIN	t
+65	ATTIC	t
+65	CHRECT	t
+53	PLZLYKME	t
+65	PROB	t
+65	KPRIME	t
+53	LCPESY	t
+65	TACHSTCK	t
+65	TAAPLUSB	t
+65	SPCANDY	t
+53	PROSUM	t
+65	HELLO	t
+53	WALK	t
+53	POTATOES	t
+53	BINTREE	t
+53	SNAPE	t
+53	OJUMPS	t
+53	RRSTONE	t
+53	CHEFZOT	t
+53	GUESS	t
+65	LELEMON	t
+53	CSUB	t
+53	RETPO	t
+53	RRSUM	t
+65	RIGHTRI	t
+53	RAINBOWB	t
+53	CHEFGR	t
+65	INTEG	t
+53	PRLADDU	t
+53	PRPOTION	t
+53	FATCHEF	t
+56	TIDRICE	t
+65	CAOS1	t
+65	CAOS2	t
+65	RRCODE	t
+55	MUFFINS3	t
+56	FCTRL2	t
+56	ONP	t
+56	MARCHA1	t
+56	MUFFINS3	t
+56	CLEANUP	t
+56	CIELRCPT	t
+56	VOTERS	t
+56	CARVANS	t
+56	HOTEL	t
+56	DRAGNXOR	t
+56	BESTBATS	t
+56	LAPIN	t
+56	LEBOMBS	t
+56	TEST	t
+56	FCTRL	t
+56	DOUBLE	t
+56	PRPALIN	t
+56	EASYPROB	t
+56	TSORT	t
+56	CANDLE	t
+56	GCD2	t
+56	BUY1GET1	t
+56	NUMGAME2	t
+56	BUYING2	t
+56	LEPERMUT	t
+56	AMSGAME1	t
+56	JOHNY	t
+56	HS08TEST	t
+56	HOLES	t
+56	PERMUT2	t
+56	SUMTRIAN	t
+56	CIELAB	t
+56	RECIPE	t
+56	LECANDY	t
+56	COMM3	t
+56	DECSTR	t
+56	CONFLIP	t
+56	MARCHA2	t
+56	STONES	t
+56	RESQ	t
+56	INTEST	t
+56	TLG	t
+56	COOLING	t
+56	NUMGAME	t
+56	NUKES	t
+56	MAXCOUNT	t
+56	PCYCLE	t
+56	J7	t
+56	HORSES	t
+56	CHEFLUCK	t
+56	POINTS	t
+56	NOTATRI	t
+65	COLARR	t
+65	LCPESY	t
+65	SUBMIN	t
+65	TWODOGS	t
+65	REMISS	t
+65	KINGSHIP	t
+65	LPAIR	t
+67	GENARSEQ	t
+67	GERALD04	t
+67	TREEGAME	t
+67	DEFACING	t
+67	GERALD05	t
+67	SUBLCM	t
+67	RRCOPY	t
+67	LUCKYSTR	t
+67	CLEANUP	t
+67	METEORAK	t
+67	WW2	t
+67	RRSUM	t
+67	LUCKYSWP	t
+67	MUFFINS	t
+67	TRAVELER	t
+67	MTRICK	t
+67	PERMSUFF	t
+67	APPROX	t
+67	TOTR	t
+67	FIRESC	t
+67	FCBARCA	t
+67	LEMUSIC	t
+67	MAXDIFF	t
+67	KINGCON	t
+67	LEVY	t
+67	NAME1	t
+67	NAME2	t
+67	AMSGAME1	t
+67	LAPIN	t
+67	PREDICT	t
+67	SHIRO	t
+67	LELEMON	t
+67	SPCANDY	t
+67	HELLO	t
+67	SPOONS	t
+67	CAOS1	t
+67	LEEXAMS	t
+67	CAOS2	t
+67	COOLGUYS	t
+67	INTEG	t
+67	SPOTWO	t
+67	JOHNY	t
+67	MCHAIRS	t
+67	SDSQUARE	t
+67	AMIFIB	t
+67	NEXTNUM	t
+67	ALEXNUMB	t
+67	MARBLEGF	t
+67	CHODE	t
+67	RECTQUER	t
+67	REIGN	t
+67	PLZLYKME	t
+67	FGFS	t
+67	SEAGRP	t
+67	ERROR	t
+67	CAKE1AM	t
+67	DRGHTS	t
+67	ANUGCD	t
+67	GRID	t
+67	SUBGCD	t
+68	PRPALIN	t
+68	HS08TEST	t
+68	PANSTACK	t
+68	DOUBLE	t
+68	PLAYFIT	t
+68	BESTBATS	t
+68	CHEFLUCK	t
+68	TWSTR	t
+68	STONES	t
+69	SALARY	t
+69	CVOTE	t
+70	TEST	t
+70	CARVANS	t
+70	TAVISUAL	t
+71	ANUBGC	t
+71	TEST	t
+71	PPXOR	t
+71	TWOCOMP	t
+71	GARDENSQ	t
+71	MISINTER	t
+71	PPNUM	t
+71	PPTEST	t
+71	BINTOUR	t
+71	WALK	t
+71	MIKE3	t
+71	PROSUM	t
+71	TMSLT	t
+71	ADIGIT	t
+71	CNPIIM	t
+71	POTATOES	t
+71	BINTREE	t
+71	SNAPE	t
+71	TCP	t
+71	OJUMPS	t
+71	LEBALONS	t
+71	RRSTONE	t
+71	SEAGM	t
+71	COMPILER	t
+71	CHEFBM	t
+71	ANUUND	t
+71	ANUDTC	t
+71	GUESS	t
+71	FUNC	t
+71	FORGETPW	t
+71	LEBLOCKS	t
+71	DIGJUMP	t
+71	CHEFZOT	t
+71	MAXPR	t
+71	FLAGS	t
+71	KNPSK	t
+71	WTHINGS	t
+71	PNTNG	t
+71	RETPO	t
+71	DISHOWN	t
+71	FROGV	t
+71	SGARDEN	t
+71	CSUB	t
+71	LEPAINT	t
+73	RRCOPY	t
+73	CRAWA	t
+73	CHEFLR	t
+73	ROTATION	t
+74	NUKES	t
+74	MARBLEGF	t
+74	MIXTURES	t
+74	TREEROOT	t
+74	GRID	t
+74	CHEFLUCK	t
+74	MARBLES	t
+74	INTEG	t
+74	CKISSHUG	t
+74	SPOONS	t
+74	SUBGCD	t
+74	COINS	t
+74	COLLIDE	t
+74	BUY1GET1	t
+74	KNPSK	t
+74	ALEXNUMB	t
+74	ERROR	t
+74	WALK	t
+74	PROSUM	t
+74	ROTATION	t
+74	CHEFGR	t
+75	INSOMA2	t
+76	MINESWPR	t
+76	WITMATH	t
+77	HS08TEST	t
+77	ONP	t
+77	MAXCOUNT	t
+77	LECANDY	t
+77	TOURMAP	t
+77	PLZLYKME	t
+77	PLAYFIT	t
+77	FCTRL2	t
+77	COOLING	t
+77	TACHSTCK	t
+77	WALK	t
+77	HDELIVER	t
+77	WCOUNT	t
+77	GRANAMA	t
+77	BINTREE	t
+77	INTEST	t
+77	MARCHA1	t
+77	NAME2	t
+77	TPRODUCT	t
+77	RECTQUER	t
+77	CHRECT	t
+77	TEST	t
+77	TWTCLOSE	t
+77	CLEANUP	t
+77	MARBLEGF	t
+77	CIELTOMY	t
+77	CIELDIST	t
+77	POTATOES	t
+77	OJUMPS	t
+78	KPRIME	t
+78	CHEFZOT	t
+79	ERROR	t
+79	PLZLYKME	t
+79	SUBMIN	t
+79	TWODOGS	t
+79	LCPESY	t
+80	INTEST	t
+80	FCTRL	t
+80	NUMGAME	t
+80	ROWCOLOP	t
+80	PPXOR	t
+80	PERMUT2	t
+80	BUYING2	t
+80	CONFLIP	t
+80	JOHNY	t
+80	OJUMPS	t
+80	RRSTONE	t
+80	ANUUND	t
+80	ANUDTC	t
+80	CHEFZOT	t
+80	GUESS	t
+81	ONP	t
+81	PERMUT2	t
+81	NUKES	t
+81	CANDLE	t
+81	HS08TEST	t
+81	SUMTRIAN	t
+81	TLG	t
+81	PCYCLE	t
+81	CLEANUP	t
+81	J7	t
+81	HOLES	t
+81	FCTRL	t
+81	TSORT	t
+81	EASYPROB	t
+81	NUMGAME	t
+81	COOLING	t
+81	POKER	t
+81	FCTRL2	t
+81	MARCHA1	t
+81	MARCHA2	t
+81	NOTATRI	t
+81	DECSTR	t
+81	NUMGAME2	t
+82	HOLES	t
+82	MARCHA1	t
+82	CONFLIP	t
+82	RRCODE	t
+82	TEST	t
+82	ONP	t
+82	RECIPE	t
+82	NAME2	t
+82	FCTRL	t
+82	PERMUT2	t
+82	DOUBLE	t
+82	CANDLE	t
+82	GERALD04	t
+82	POTATOES	t
+82	INTEST	t
+82	TLG	t
+82	LAPIN	t
+82	RIGHTRI	t
+82	CAOS1	t
+82	CAOS2	t
+82	LCPESY	t
+82	WALK	t
+82	SNAPE	t
+82	OJUMPS	t
+83	DIGJUMP	t
+83	FCTRL	t
+83	CHEFZOT	t
+83	GUESS	t
+83	FORGETPW	t
+84	HOLES	t
+84	LEDIV	t
+84	TEST	t
+84	EASYPROB	t
+84	CIELNUM2	t
+84	NUMGAME	t
+84	BUYING2	t
+84	CIELNUM1	t
+84	PERMSUFF	t
+84	SUMTRIAN	t
+84	GARDENSQ	t
+84	DUMPLING	t
+84	KNIGHTMV	t
+84	RRECIPE	t
+84	NOLOGIC	t
+84	IGAME	t
+84	MAXCOUNT	t
+84	LUCKY5	t
+84	SHUTTLE	t
+84	SPOON	t
+84	DOUBLE	t
+84	PLAYFIT	t
+84	CHEFLUCK	t
+84	STONES	t
+84	TWSTR	t
+84	CAKEDOOM	t
+84	RESQ	t
+84	LECANDY	t
+84	TWTCLOSE	t
+84	SAD	t
+84	CIELRCPT	t
+84	CARVANS	t
+84	LEPERMUT	t
+84	MUFFINS3	t
+84	DIRECTI	t
+84	CVOTE	t
+84	THREEDIF	t
+84	LEALCO	t
+84	SALARY	t
+84	CHEFHACK	t
+84	ROWCOLOP	t
+84	AMMEAT2	t
+84	AMMEAT	t
+84	NAME1	t
+84	MSTICK	t
+84	WITMATH	t
+84	TREE	t
+84	NAME2	t
+84	CHALENGE	t
+85	NOCODING	t
+88	TEST	t
+88	FCTRL	t
+88	INTEST	t
+88	HOLES	t
+88	HS08TEST	t
+88	NICEQUAD	t
+88	OJUMPS	t
+88	GUESS	t
+88	CHEFZOT	t
+88	CSUB	t
+88	RETPO	t
+89	ERROR	t
+89	NUMGAME2	t
+89	SUBGCD	t
+89	ANUARM	t
+89	FLAGS	t
+89	RRCOPY	t
+89	NOKIA	t
+89	CKISSHUG	t
+89	RRSUM	t
+89	GRID	t
+89	CONFLIP	t
+89	PLZLYKME	t
+89	COINS	t
+89	DIGJUMP	t
+89	WALK	t
+89	PROSUM	t
+89	BINTREE	t
+89	POTATOES	t
+89	OJUMPS	t
+89	RRSTONE	t
+89	CHEFZOT	t
+89	GUESS	t
+89	RETPO	t
+89	CSUB	t
+89	PRGIFT	t
+89	CRAWA	t
+89	CHEFLR	t
+89	ROTATION	t
+89	CHEFGR	t
+89	PRLADDU	t
+89	PRPOTION	t
+89	FATCHEF	t
+90	FCTRL2	t
+90	ARRAYTRM	t
+90	CANDLE	t
+90	EQUALIZ	t
+90	UPDTREE	t
+90	TEST	t
+90	TIDRICE	t
+90	ONP	t
+90	CLEANUP	t
+90	MARCHA1	t
+90	SPREAD	t
+90	FLIPCOIN	t
+90	ANUMLA	t
+90	FCTRL	t
+90	NUMGAME	t
+90	PERMUT2	t
+90	LWS	t
+90	LASTDIG	t
+90	PPXOR	t
+90	INTEST	t
+90	COINS	t
+90	TSORT	t
+90	MIME2	t
+90	LAND	t
+90	MAXCOUNT	t
+90	LUCKY5	t
+90	WCOUNT	t
+90	SPOON	t
+90	SHUTTLE	t
+90	HDELIVER	t
+90	DOUBLE	t
+90	SIMGRAPH	t
+90	PLAYFIT	t
+90	PARALLEL	t
+90	PANSTACK	t
+90	DUMPLING	t
+90	CHEFHOME	t
+90	DIVPAIR	t
+90	STONES	t
+90	CHEFLUCK	t
+90	TWSTR	t
+90	LECANDY	t
+90	RESQ	t
+90	SAD	t
+90	CSUMD	t
+90	CKISSHUG	t
+90	CHEFTOWN	t
+90	CROWD	t
+90	HORSES	t
+90	BUYING2	t
+90	CHRECT	t
+90	LELEMON	t
+90	SPCANDY	t
+90	SPOONS	t
+90	COOLGUYS	t
+90	HELPLIRA	t
+90	CAOS3	t
+90	LEBAMBOO	t
+90	SEATRSF	t
+90	EDSTGRID	t
+90	ARRGAME2	t
+90	MAANDI	t
+90	KMHAMHA	t
+90	SPOTWO	t
+90	PRETNUM	t
+90	CHEFLR	t
+90	ROTATION	t
+90	CHEFGR	t
+90	PRPOTION	t
+90	PRLADDU	t
+90	TRIPS	t
+90	FATCHEF	t
+90	CHEFSQUA	t
+90	SEATSR	t
+90	CHEFPNT	t
+91	PERMUT2	t
+91	STONES	t
+91	PLZLYKME	t
+91	HELPLIRA	t
+91	CLEANUP	t
+91	CONFLIP	t
+91	LEPERMUT	t
+91	LEBOMBS	t
+91	FCTRL	t
+91	INTEST	t
+91	HS08TEST	t
+91	CIELAB	t
+91	SUMTRIAN	t
+91	LECANDY	t
+91	PCYCLE	t
+91	CIELRCPT	t
+91	HOTEL	t
+91	LELEMON	t
+91	RESQ	t
+91	TLG	t
+91	TEST	t
+91	PRPALIN	t
+91	GERALD04	t
+91	BUY1GET1	t
+91	MAXCOUNT	t
+91	RECIPE	t
+91	CARVANS	t
+91	NOTATRI	t
+91	LUCKYSTR	t
+91	LAPIN	t
+91	HOLES	t
+91	HORSES	t
+91	ALEXNUMB	t
+91	MAXDIFF	t
+91	ONP	t
+91	COMM3	t
+91	BESTBATS	t
+91	AMSGAME1	t
+91	ERROR	t
+91	LCPESY	t
+91	REMISS	t
+91	WALK	t
+91	PROSUM	t
+91	DIVIDING	t
+91	BINTREE	t
+91	POTATOES	t
+91	SNAPE	t
+91	CSUB	t
+91	CHEFGR	t
+92	AMMEAT	t
+92	AMMEAT2	t
+94	INTEST	t
+94	TEST	t
+94	CHIEFETT	t
+94	HS08TEST	t
+94	ODDBIN	t
+94	ASTRGAME	t
+94	DELIVERY	t
+94	BYTEISLE	t
+94	HBEAR	t
+94	PAIRING	t
+94	PREPARE	t
+94	COMMUTE	t
+94	CHESSGM	t
+94	RESTEXP	t
+94	FLUSHOT	t
+94	SPLIT	t
+94	COUNTREL	t
+94	KUNIQUE	t
+94	NUMGAME2	t
+94	CPOINT	t
+94	RECTCNT	t
+94	BWALL	t
+94	BICKER	t
+94	TPRODUCT	t
+94	CTEAMS	t
+94	RG_01	t
+94	KNIGHTMV	t
+94	SUPERPLN	t
+94	LOKBIL	t
+94	MISINTER	t
+94	GARDENSQ	t
+94	IGAME	t
+94	CHEFBRO	t
+94	TRMAG	t
+94	DISHDIS	t
+94	LUCKPAL	t
+94	LAND	t
+94	GENARSEQ	t
+94	TRAVELER	t
+94	RHOUSE	t
+94	LUCKY5	t
+94	WCOUNT	t
+94	MAXCOUNT	t
+94	PANSTACK	t
+94	DUMPLING	t
+94	DOUBLE	t
+94	PLAYFIT	t
+94	LUCKYSTR	t
+94	RESQ	t
+94	CAKEDOOM	t
+94	LECANDY	t
+94	NOCODING	t
+94	YNOUTPUT	t
+94	HORSES	t
+94	CKISSHUG	t
+94	CROWD	t
+94	CHEFTOWN	t
+95	FCTRL2	t
+95	ERROR	t
+95	TEST	t
+95	TLG	t
+95	INTEST	t
+95	HS08TEST	t
+95	HOLES	t
+95	PROSUM	t
+95	LCPESY	t
+95	SUBMIN	t
+95	WALK	t
+95	POTATOES	t
+95	BINTREE	t
+95	OJUMPS	t
+95	RRSTONE	t
+96	DECSTR	t
+96	MIME2	t
+96	TEST	t
+96	STADIUM	t
+96	CLEANUP	t
+96	HS08TEST	t
+96	CHEFTEAM	t
+96	ARRANGE	t
+96	GARDENSQ	t
+96	NUKES	t
+96	FCTRL	t
+96	HOLES	t
+96	EQIDLIS	t
+96	TIDRICE	t
+96	CTEAMS	t
+96	LOKBIL	t
+96	MAXCOUNT	t
+96	DOUBLE	t
+96	PANSTACK	t
+96	PLAYFIT	t
+96	CHEFHOME	t
+96	STONES	t
+96	CHEFLUCK	t
+96	LECANDY	t
+96	RESQ	t
+96	CAKEDOOM	t
+96	TWTCLOSE	t
+96	RRATING	t
+96	SAD	t
+96	DREAM	t
+96	CSUMD	t
+97	FIRESC	t
+97	RRSTONE	t
+97	COMPILER	t
+97	ANUUND	t
+97	OJUMPS	t
+97	FGFS	t
+97	HELPLIRA	t
+97	ALEXNUMB	t
+97	ERROR	t
+97	CAKE1AM	t
+97	LCPESY	t
+97	SUBMIN	t
+97	TWODOGS	t
+97	REMISS	t
+97	KINGSHIP	t
+97	WALK	t
+97	PROSUM	t
+97	TMSLT	t
+97	POTATOES	t
+97	BINTREE	t
+97	ADIGIT	t
+97	CHEFZOT	t
+97	FORGETPW	t
+97	GUESS	t
+97	DIGJUMP	t
+97	RETPO	t
+97	FROGV	t
+97	SGARDEN	t
+97	CSUB	t
+97	DISHOWN	t
+97	RRSUM	t
+97	RRCOPY	t
+97	PRGIFT	t
+97	REVERSE	t
+97	CLETAB	t
+97	CRAWA	t
+97	CHEFGR	t
+97	FATCHEF	t
+97	PRPOTION	t
+97	PRLADDU	t
+98	SPCANDY	t
+98	LELEMON	t
+98	HELLO	t
+98	RRCODE	t
+98	RRMATRIX	t
+98	MAANDI	t
+98	KMHAMHA	t
+98	LEBAMBOO	t
+98	SEATRSF	t
+98	ARRGAME2	t
+98	HELPLIRA	t
+98	EDSTGRID	t
+99	CARVANS	t
+99	RRSUM	t
+99	NOCODING	t
+99	CIELNUM2	t
+99	RRCOPY	t
+99	DOUBLE	t
+99	CHEFLUCK	t
+99	LECANDY	t
+99	RESQ	t
+99	LEBOMBS	t
+99	HORSES	t
+99	CKISSHUG	t
+99	DRGNBOOL	t
+99	NEWSCH	t
+99	CONFLIP	t
+99	GRANAMA	t
+99	SALARY	t
+99	CLMBSTRS	t
+99	LECARDS	t
+99	BUY1GET1	t
+99	APPROX	t
+99	TOTR	t
+99	FCBARCA	t
+99	MAXDIFF	t
+99	LEVY	t
+99	SPCANDY	t
+99	HELLO	t
+99	ALEXNUMB	t
+99	LCPESY	t
+99	SUBMIN	t
+99	WALK	t
+99	OJUMPS	t
+99	RRSTONE	t
+99	FORGETPW	t
+99	CHEFZOT	t
+99	GUESS	t
+99	CSUB	t
+99	RETPO	t
+99	PRGIFT	t
+99	CHEFGR	t
+100	TEST	t
+100	HS08TEST	t
+100	NUMGAME	t
+100	TSORT	t
+100	INTEST	t
+100	FCTRL	t
+100	COOLING	t
+100	ONP	t
+100	HOLES	t
+100	FCTRL2	t
+100	DOUBLE	t
+100	MUFFINS3	t
+100	SUMTRIAN	t
+100	JOHNY	t
+100	ERROR	t
+100	REMISS	t
+100	WALK	t
+100	POTATOES	t
+100	SNAPE	t
+100	GRID	t
+100	SUBGCD	t
+101	LECANDY	t
+101	RESQ	t
+102	SUMTRIAN	t
+102	ANUDTC	t
+102	DIGJUMP	t
+102	BUY1GET1	t
+102	INTEST	t
+102	ANUUND	t
+102	DIVIDING	t
+102	CLEANUP	t
+102	NAME2	t
+102	NUMGAME	t
+102	MAXCOUNT	t
+102	HS08TEST	t
+102	TLG	t
+102	COOLING	t
+102	ERROR	t
+102	HOLES	t
+102	PERMUT2	t
+102	SPCANDY	t
+102	SUBMIN	t
+102	LCPESY	t
+102	POTATOES	t
+102	OJUMPS	t
+102	GUESS	t
+102	CHEFZOT	t
+102	CSUB	t
+103	TEST	t
+103	POTATOES	t
+103	BINTREE	t
+103	PRGIFT	t
+\.
+
+
+--
+-- Data for Name: followers; Type: TABLE DATA; Schema: public; Owner: db120050032
+--
+
+COPY followers (follower, followed) FROM stdin;
+1	4
+\.
+
+
+--
+-- Name: followers_followed_seq; Type: SEQUENCE SET; Schema: public; Owner: db120050032
+--
+
+SELECT pg_catalog.setval('followers_followed_seq', 1, false);
+
+
+--
+-- Name: followers_follower_seq; Type: SEQUENCE SET; Schema: public; Owner: db120050032
+--
+
+SELECT pg_catalog.setval('followers_follower_seq', 1, false);
+
+
+--
+-- Data for Name: problems; Type: TABLE DATA; Schema: public; Owner: db120050032
+--
+
+COPY problems (code, name, link, doa, difficulty, statistic) FROM stdin;
+LELUCKYN	Little Elephant and Lucky Segment	http://www.codechef.com/problems/LELUCKYN	2012-06-06	medium	(8,4.60)
+CIELNUM3	Ciel Numbers III	http://www.codechef.com/problems/CIELNUM3	2012-07-04	medium	(8,15.38)
+GRIDGAME	Game on a Grid	http://www.codechef.com/problems/GRIDGAME	2012-11-22	medium	(8,19.05)
+FBCHEF	Final Battle of Chef	http://www.codechef.com/problems/FBCHEF	2013-01-17	medium	(8,17.83)
+DFSGRID	Chef and The Recursive Algorithm	http://www.codechef.com/problems/DFSGRID	2013-08-02	medium	(8,15.07)
+GERALD06	Chef and Strange Graph	http://www.codechef.com/problems/GERALD06	2013-12-12	medium	(8,18.60)
+COTA	Chef of The Ancient	http://www.codechef.com/problems/COTA	2014-01-31	medium	(8,32.14)
+DIREL	Distant Relatives	http://www.codechef.com/problems/DIREL	2014-02-23	medium	(8,4.60)
+TREERGB	Paint the Tree	http://www.codechef.com/problems/TREERGB	2014-08-13	medium	(8,44.00)
+CUTSQRS	Cutting off Squares	http://www.codechef.com/problems/CUTSQRS	2008-12-01	medium	(9,23.08)
+B3	Battleship V	http://www.codechef.com/problems/B3	2009-03-15	medium	(9,12.79)
+AX	Place the mines!	http://www.codechef.com/problems/AX	2008-12-01	medium	(9,18.99)
+D3	The battlefield	http://www.codechef.com/problems/D3	2009-05-05	medium	(9,47.62)
+F5	Magic sequence	http://www.codechef.com/problems/F5	2009-07-10	medium	(9,13.10)
+E2	Lights Off	http://www.codechef.com/problems/E2	2009-06-05	medium	(9,23.68)
+F3	Curry Stained Napkin	http://www.codechef.com/problems/F3	2009-07-10	medium	(9,13.04)
+H5	Paragraph Formatting	http://www.codechef.com/problems/H5	2009-09-15	medium	(9,12.12)
+SUMSLOPE	Summing Slopes	http://www.codechef.com/problems/SUMSLOPE	2010-04-11	medium	(9,3.64)
+SWARM	Swarm of Polygons	http://www.codechef.com/problems/SWARM	2010-04-13	medium	(9,3.66)
+HAPPY	Happy Days	http://www.codechef.com/problems/HAPPY	2010-05-03	medium	(9,4.95)
+GRIDCHEF	Chefs Bad Day	http://www.codechef.com/problems/GRIDCHEF	2010-09-01	medium	(9,23.68)
+GLASS	Glass Measurement	http://www.codechef.com/problems/GLASS	2010-09-02	medium	(9,19.51)
+CANDY	The Perfect Chocolate Candy	http://www.codechef.com/problems/CANDY	2010-09-25	medium	(9,12.12)
+BALANCED	Balanced Walks	http://www.codechef.com/problems/BALANCED	2010-10-01	medium	(9,46.43)
+SOCIAL	Dinner Party Socializing	http://www.codechef.com/problems/SOCIAL	2010-11-10	medium	(9,22.73)
+SEEDS	Seeding The Pattern	http://www.codechef.com/problems/SEEDS	2010-12-08	medium	(9,25.64)
+TERM	Counting Terms	http://www.codechef.com/problems/TERM	2011-01-03	medium	(9,23.21)
+COLLTIME	Time of collisions	http://www.codechef.com/problems/COLLTIME	2011-01-16	medium	(9,11.34)
+ENERGY	Dance Floor Energy	http://www.codechef.com/problems/ENERGY	2011-02-04	medium	(9,40.74)
+CROWNS	Icing Crowns	http://www.codechef.com/problems/CROWNS	2011-02-07	medium	(9,34.62)
+RESTOCK	Restock	http://www.codechef.com/problems/RESTOCK	2011-04-28	medium	(9,22.73)
+YALOP	Trial of Doom	http://www.codechef.com/problems/YALOP	2011-05-02	medium	(9,45.45)
+BLOCKDRO	Block Drop	http://www.codechef.com/problems/BLOCKDRO	2011-07-09	medium	(9,2.38)
+BAKE	The Baking Business	http://www.codechef.com/problems/BAKE	2011-08-22	medium	(9,12.50)
+POSTAL	The Postal Service	http://www.codechef.com/problems/POSTAL	2011-09-11	medium	(9,16.13)
+NONPALIN	First non-Palindrome	http://www.codechef.com/problems/NONPALIN	2011-10-14	medium	(9,16.25)
+GRAPLANE	Graph on a Plane	http://www.codechef.com/problems/GRAPLANE	2011-11-12	medium	(9,25.71)
+BUYING	Buying Candies	http://www.codechef.com/problems/BUYING	2011-11-12	medium	(9,8.87)
+GAPFILL	Gap Filler Game	http://www.codechef.com/problems/GAPFILL	2011-11-20	medium	(9,25.00)
+LUCKY4	Lucky Array	http://www.codechef.com/problems/LUCKY4	2011-11-22	medium	(9,17.31)
+FLOORSMV	Moving between Floors	http://www.codechef.com/problems/FLOORSMV	2012-01-09	medium	(9,40.00)
+LUCKFILL	Little Elephant and Filling	http://www.codechef.com/problems/LUCKFILL	2012-01-27	medium	(9,9.73)
+CIELGAME	Ciel and Genjiko	http://www.codechef.com/problems/CIELGAME	2012-02-27	medium	(9,32.35)
+LUCKYCOM	Little Elephant and CNSes	http://www.codechef.com/problems/LUCKYCOM	2012-03-01	medium	(9,15.63)
+CIELLAND	Ciel and a new island	http://www.codechef.com/problems/CIELLAND	2012-03-09	medium	(9,29.73)
+BMASTER	Blade Master	http://www.codechef.com/problems/BMASTER	2012-08-05	medium	(9,13.10)
+ARIGEOM	Arigeom Beats	http://www.codechef.com/problems/ARIGEOM	2012-08-29	medium	(9,8.09)
+DECORATE	Lucy and the Flowers	http://www.codechef.com/problems/DECORATE	2012-11-30	medium	(9,20.83)
+TABISHOP	Bishops	http://www.codechef.com/problems/TABISHOP	2013-02-10	medium	(9,15.24)
+AMROOK	Rook Placement	http://www.codechef.com/problems/AMROOK	2013-05-08	medium	(9,23.64)
+GRIDCOL	Chef and The Colored Grid	http://www.codechef.com/problems/GRIDCOL	2013-08-05	medium	(9,5.53)
+ANUBTT	Build the Tree	http://www.codechef.com/problems/ANUBTT	2014-04-22	medium	(9,19.74)
+MENU	Menu	http://www.codechef.com/problems/MENU	2008-12-01	medium	(10,14.67)
+MMATCH	The Cursed Room	http://www.codechef.com/problems/MMATCH	2008-12-01	medium	(10,43.04)
+D2	The Lucky Draw	http://www.codechef.com/problems/D2	2009-05-05	medium	(10,2.57)
+F2	Bytelandian Robots	http://www.codechef.com/problems/F2	2009-07-10	medium	(10,26.19)
+G1	A Bowling Game	http://www.codechef.com/problems/G1	2009-08-15	medium	(10,30.00)
+G2	Smart Frog	http://www.codechef.com/problems/G2	2009-08-15	medium	(10,5.95)
+N3	K-important Strings	http://www.codechef.com/problems/N3	2010-02-05	medium	(10,25.64)
+ECODE	Exit code	http://www.codechef.com/problems/ECODE	2010-05-05	medium	(10,6.37)
+TWOCHEFS	Two Chefs	http://www.codechef.com/problems/TWOCHEFS	2010-09-25	medium	(10,15.28)
+ODDBIN	Odd Binomial Coefficients	http://www.codechef.com/problems/ODDBIN	2010-10-15	medium	(10,23.53)
+RESTEXP	Restaurant Expansion	http://www.codechef.com/problems/RESTEXP	2010-10-28	medium	(10,50.00)
+SQUAGAME	Squares Game	http://www.codechef.com/problems/SQUAGAME	2010-12-26	medium	(10,19.67)
+NETWORK	Wireless Network	http://www.codechef.com/problems/NETWORK	2011-04-11	medium	(10,34.48)
+TARPRACT	Target Practice	http://www.codechef.com/problems/TARPRACT	2011-09-07	medium	(10,14.10)
+PERMDIG	Permute Digits	http://www.codechef.com/problems/PERMDIG	2011-10-12	medium	(10,12.82)
+ZENCALC	Peaceful Calculator	http://www.codechef.com/problems/ZENCALC	2012-07-21	medium	(10,34.21)
+SUBTREE	Festivals	http://www.codechef.com/problems/SUBTREE	2012-12-25	medium	(10,33.91)
+GERALD3	Chef and Substrings	http://www.codechef.com/problems/GERALD3	2013-11-08	medium	(10,5.53)
+ORDERAAM	Chef and the Orders	http://www.codechef.com/problems/ORDERAAM	2014-01-06	medium	(10,11.93)
+FUNAGP	Fun with AGp	http://www.codechef.com/problems/FUNAGP	2014-03-08	medium	(10,11.63)
+SEABUB	Sereja and Bubble Sort	http://www.codechef.com/problems/SEABUB	2014-03-15	medium	(10,14.47)
+CNTDIGIT	Count Digits	http://www.codechef.com/problems/CNTDIGIT	2014-08-14	medium	(10,7.69)
+PHRASES	Relevant Phrases of Annihilation	http://www.codechef.com/problems/PHRASES	2008-12-01	medium	(11,2.96)
+ARCHPLG	The Archipelago	http://www.codechef.com/problems/ARCHPLG	2008-12-01	hard	(0,0.00)
+POST	Post Office	http://www.codechef.com/problems/POST	2010-07-07	hard	(0,0.00)
+ACMKANPA	Problem With Strings	http://www.codechef.com/problems/ACMKANPA	2010-10-27	hard	(0,0.00)
+QSTRING	Stringology is Magic	http://www.codechef.com/problems/QSTRING	2014-09-06	hard	(1,0.85)
+ACMKANPE	Algebra Express	http://www.codechef.com/problems/ACMKANPE	2010-10-27	hard	(2,2.15)
+REALSET	Petya and Sequence	http://www.codechef.com/problems/REALSET	2013-10-18	hard	(2,34.43)
+BTREE	Union on Tree	http://www.codechef.com/problems/BTREE	2014-08-26	hard	(2,4.00)
+A8	The Bytelandian Union	http://www.codechef.com/problems/A8	2008-12-01	hard	(3,4.55)
+J4	Effective Sets	http://www.codechef.com/problems/J4	2009-10-15	hard	(3,3.23)
+N2	Heroes of Magical Might	http://www.codechef.com/problems/N2	2010-02-05	hard	(3,50.00)
+LIGHTING	Lighting the shop	http://www.codechef.com/problems/LIGHTING	2010-03-11	hard	(3,1.69)
+DOMNOCUT	Colored Domino Tilings and Cuts	http://www.codechef.com/problems/DOMNOCUT	2011-07-23	hard	(3,37.50)
+HYPER	Hypertrees	http://www.codechef.com/problems/HYPER	2011-09-30	hard	(3,50.00)
+CIELWEB	Ciel and Communications System	http://www.codechef.com/problems/CIELWEB	2012-02-27	hard	(3,37.50)
+CONNECT	Find a special connected block	http://www.codechef.com/problems/CONNECT	2012-02-28	hard	(3,5.77)
+CIELBALL	Ciel and Ball Guessing Game	http://www.codechef.com/problems/CIELBALL	2012-07-04	hard	(3,17.39)
+LEPAPER	Little Elephant and Sheet	http://www.codechef.com/problems/LEPAPER	2012-07-23	hard	(3,10.34)
+MAXCIR	Max Circumference	http://www.codechef.com/problems/MAXCIR	2012-09-10	hard	(3,7.27)
+LONGART	Longest Article	http://www.codechef.com/problems/LONGART	2012-11-30	hard	(3,4.48)
+CIELKARA	Ciel and Karaoke	http://www.codechef.com/problems/CIELKARA	2013-01-02	hard	(3,57.14)
+LOGO	McHefs 3D Logo	http://www.codechef.com/problems/LOGO	2013-02-23	hard	(3,100.00)
+DEG3MAXT	Three-Degree-Bounded Maximum Cost Subtree	http://www.codechef.com/problems/DEG3MAXT	2013-07-24	hard	(3,66.67)
+LMATRIX3	Make It Zero 3	http://www.codechef.com/problems/LMATRIX3	2014-03-03	hard	(3,42.86)
+FIBTREE	Fibonacci Numbers on Tree	http://www.codechef.com/problems/FIBTREE	2014-06-25	hard	(3,27.27)
+PUSHFLOW	Push the Flow!	http://www.codechef.com/problems/PUSHFLOW	2014-06-27	hard	(3,27.27)
+A5	Packing the Boxes	http://www.codechef.com/problems/A5	2008-12-01	hard	(4,3.31)
+A7	A Christmas Pizza Puzzle	http://www.codechef.com/problems/A7	2008-12-01	hard	(4,19.51)
+M4	Toll Trolls	http://www.codechef.com/problems/M4	2010-01-15	hard	(4,22.22)
+G5	Chemical reactions	http://www.codechef.com/problems/G5	2009-08-15	hard	(4,26.92)
+SNCK02	Powerful Strongholds	http://www.codechef.com/problems/SNCK02	2009-11-13	hard	(4,40.00)
+M1	The Mine Field	http://www.codechef.com/problems/M1	2010-01-15	hard	(4,18.52)
+M5	Overlapping discs	http://www.codechef.com/problems/M5	2010-01-29	hard	(4,28.57)
+CLUE	Get a Clue	http://www.codechef.com/problems/CLUE	2010-06-09	hard	(4,22.22)
+STEPNUMS	Stepping Numbers	http://www.codechef.com/problems/STEPNUMS	2010-07-04	hard	(4,6.06)
+SERVERS	Communicating Servers	http://www.codechef.com/problems/SERVERS	2010-08-14	hard	(4,28.00)
+ESCAPE	Escape The Ruins	http://www.codechef.com/problems/ESCAPE	2010-10-13	hard	(4,25.00)
+ACMKANPC	Traffic Jam	http://www.codechef.com/problems/ACMKANPC	2010-10-27	hard	(4,25.00)
+RUSHHOUR	Rush Hour	http://www.codechef.com/problems/RUSHHOUR	2010-12-03	hard	(4,24.07)
+WINDOW	Chef attic window	http://www.codechef.com/problems/WINDOW	2010-12-10	hard	(4,12.24)
+GENIND	Generalized Independent Sets	http://www.codechef.com/problems/GENIND	2011-01-05	hard	(4,43.75)
+HARMONY	Harmonious Decorating	http://www.codechef.com/problems/HARMONY	2011-04-14	hard	(4,57.14)
+CLONES	Attack of the Clones	http://www.codechef.com/problems/CLONES	2011-04-17	hard	(4,30.77)
+MINESREV	Minesweeper Reversed	http://www.codechef.com/problems/MINESREV	2011-04-27	hard	(4,7.69)
+CKSCHOOL	Preferred Cooking Schools	http://www.codechef.com/problems/CKSCHOOL	2011-05-22	hard	(4,8.00)
+DIVISORS	Something About Divisors	http://www.codechef.com/problems/DIVISORS	2011-07-07	hard	(4,13.95)
+SHORTCIR	Shortest Circuit Evaluation	http://www.codechef.com/problems/SHORTCIR	2011-07-09	hard	(4,19.05)
+MISINT2	Misinterpretation 2	http://www.codechef.com/problems/MISINT2	2011-08-15	hard	(4,23.53)
+YASEQ	Yet Another Sequence	http://www.codechef.com/problems/YASEQ	2011-09-07	hard	(4,22.22)
+EVILBOOK	Evil Book	http://www.codechef.com/problems/EVILBOOK	2011-09-16	hard	(4,62.50)
+LAMQUGAM	Lame Queen Game	http://www.codechef.com/problems/LAMQUGAM	2011-10-13	hard	(4,23.81)
+FLYDIST	Flight Distance	http://www.codechef.com/problems/FLYDIST	2012-01-02	hard	(4,31.58)
+CIELQUAK	Ciel and Earthquake	http://www.codechef.com/problems/CIELQUAK	2012-02-02	hard	(4,22.73)
+MAGIC	Two Magicians	http://www.codechef.com/problems/MAGIC	2012-02-27	hard	(4,16.67)
+LECOINS	Little Elephant and Colored Coins	http://www.codechef.com/problems/LECOINS	2012-03-21	hard	(4,16.67)
+COOLNUM	Cool Numbers	http://www.codechef.com/problems/COOLNUM	2012-04-18	hard	(4,4.13)
+QPOLYSUM	Quasi-Polynomial Sum	http://www.codechef.com/problems/QPOLYSUM	2012-10-29	hard	(4,12.82)
+NPIN	Needles and Pins	http://www.codechef.com/problems/NPIN	2012-12-30	hard	(4,45.00)
+AVDWAST	Avoid Wasting	http://www.codechef.com/problems/AVDWAST	2013-01-02	hard	(4,8.33)
+CAKE2AM	Chef and the Cake II	http://www.codechef.com/problems/CAKE2AM	2014-01-06	hard	(4,35.48)
+SEAARC	Sereja and Arcs	http://www.codechef.com/problems/SEAARC	2014-03-19	hard	(4,10.50)
+D7	Alien Clock	http://www.codechef.com/problems/D7	2009-05-31	hard	(5,16.67)
+G4	Alien language	http://www.codechef.com/problems/G4	2009-08-15	hard	(5,11.90)
+J6	Help the judge	http://www.codechef.com/problems/J6	2009-10-15	hard	(5,37.10)
+DIGITS2	Product of Digits Again	http://www.codechef.com/problems/DIGITS2	2011-04-07	hard	(5,42.86)
+PRDIVSUM	Sum Divides Product	http://www.codechef.com/problems/PRDIVSUM	2011-04-12	hard	(5,4.09)
+CHEF_GAM	Chefs Game	http://www.codechef.com/problems/CHEF_GAM	2011-07-11	hard	(5,4.84)
+CNTHEX	Counting Hexagons	http://www.codechef.com/problems/CNTHEX	2011-08-06	hard	(5,14.29)
+SHORT2	Short II	http://www.codechef.com/problems/SHORT2	2011-09-30	hard	(5,41.67)
+LUCKYDAY	Lucky Days	http://www.codechef.com/problems/LUCKYDAY	2011-10-01	hard	(5,11.63)
+CIELWALK	Ciel and Random Walk	http://www.codechef.com/problems/CIELWALK	2011-11-24	hard	(5,16.13)
+FINDSEQ	Find a Subsequence	http://www.codechef.com/problems/FINDSEQ	2011-12-07	hard	(5,12.96)
+CIELHACK	Ciel and password cracking	http://www.codechef.com/problems/CIELHACK	2012-09-12	hard	(5,100.00)
+MARTARTS	Martial Arts	http://www.codechef.com/problems/MARTARTS	2012-09-21	hard	(5,44.93)
+REARRAN	Rearrangement	http://www.codechef.com/problems/REARRAN	2012-10-13	hard	(5,10.85)
+CHANGE	Making Change	http://www.codechef.com/problems/CHANGE	2013-01-02	hard	(5,29.55)
+CPP	Chef Protection Plan	http://www.codechef.com/problems/CPP	2013-01-16	hard	(5,30.43)
+MINWDSUM	Minimal Weighted Digit Sum	http://www.codechef.com/problems/MINWDSUM	2013-02-09	hard	(5,28.26)
+STRQUERY	String Query	http://www.codechef.com/problems/STRQUERY	2013-03-04	hard	(5,13.39)
+INVBINCF	Inverse Binomial Coefficient	http://www.codechef.com/problems/INVBINCF	2013-03-11	hard	(5,41.67)
+TWOROADS	Two Roads	http://www.codechef.com/problems/TWOROADS	2013-08-01	hard	(5,18.18)
+SIGFIB	Team Sigma and Fibonacci	http://www.codechef.com/problems/SIGFIB	2014-04-23	hard	(5,50.00)
+J5	Magic Strings	http://www.codechef.com/problems/J5	2009-10-15	hard	(6,20.75)
+REVERSED	The Reversed World	http://www.codechef.com/problems/REVERSED	2010-03-11	hard	(6,10.26)
+GRAPHCT	Graph Counting	http://www.codechef.com/problems/GRAPHCT	2010-04-09	hard	(6,37.50)
+DORADM01	Lights Out	http://www.codechef.com/problems/DORADM01	2010-04-09	hard	(6,37.50)
+GST	Generalized Spanning Trees	http://www.codechef.com/problems/GST	2010-04-10	hard	(6,32.00)
+OVENTIME	Renting Spare Oven Time	http://www.codechef.com/problems/OVENTIME	2010-09-09	hard	(6,22.50)
+EVENPOLY	Even Coefficients	http://www.codechef.com/problems/EVENPOLY	2010-11-08	hard	(6,70.00)
+BUYLAND	Buying Land	http://www.codechef.com/problems/BUYLAND	2011-01-03	hard	(6,35.48)
+DIVNODIV	Divisors number divisibility	http://www.codechef.com/problems/DIVNODIV	2011-01-13	hard	(6,22.73)
+EXPCOMM	Exponentiation Commutativity	http://www.codechef.com/problems/EXPCOMM	2011-03-03	hard	(6,21.21)
+BB	Billboards	http://www.codechef.com/problems/BB	2011-04-30	hard	(6,58.33)
+HPARITY	Coloring in Hypercube	http://www.codechef.com/problems/HPARITY	2011-06-06	hard	(6,46.67)
+DPOWPERM	D-Power Permutations	http://www.codechef.com/problems/DPOWPERM	2011-06-11	hard	(6,16.67)
+SHORT	Short	http://www.codechef.com/problems/SHORT	2011-08-07	hard	(6,19.79)
+TICKETS	Selling Tickets	http://www.codechef.com/problems/TICKETS	2012-03-11	hard	(6,23.73)
+HULL	Magic Hull	http://www.codechef.com/problems/HULL	2012-03-29	hard	(6,15.38)
+CUCUMBER	Cucumber Boy and Cucumber Girl	http://www.codechef.com/problems/CUCUMBER	2012-12-03	hard	(6,70.37)
+TASUFFIX	Very Long Suffix Array	http://www.codechef.com/problems/TASUFFIX	2013-05-15	hard	(6,46.15)
+GERALD2	Black and White Tree	http://www.codechef.com/problems/GERALD2	2013-10-08	hard	(6,23.08)
+ANUDTQ	Dynamic Trees and Queries	http://www.codechef.com/problems/ANUDTQ	2014-02-03	hard	(6,30.77)
+ARRANGE2	Rearranging Digits	http://www.codechef.com/problems/ARRANGE2	2010-05-05	hard	(7,8.20)
+CYDB	Can you do it better	http://www.codechef.com/problems/CYDB	2011-12-04	hard	(7,11.11)
+MATCH	Expected Maximum Matching	http://www.codechef.com/problems/MATCH	2012-03-29	hard	(7,58.33)
+PARADE	Annual Parade	http://www.codechef.com/problems/PARADE	2012-08-03	hard	(7,21.88)
+TESTERS	Vacation	http://www.codechef.com/problems/TESTERS	2012-12-23	hard	(7,17.00)
+QPOINT	Queries With Points	http://www.codechef.com/problems/QPOINT	2013-09-26	hard	(7,21.52)
+GERALD08	Chef and Tree Game	http://www.codechef.com/problems/GERALD08	2014-03-13	hard	(7,41.67)
+TRIPS	Children Trips	http://www.codechef.com/problems/TRIPS	2014-08-04	hard	(7,17.80)
+GENETICS	Genetics	http://www.codechef.com/problems/GENETICS	2010-04-09	hard	(8,18.42)
+MUFFINS2	Frosting Cupcakes	http://www.codechef.com/problems/MUFFINS2	2011-03-29	hard	(8,12.90)
+SINSUMQ	Sines Sum Queries	http://www.codechef.com/problems/SINSUMQ	2011-06-08	hard	(8,10.43)
+QRECT	Rectangle Query	http://www.codechef.com/problems/QRECT	2014-07-03	hard	(8,16.92)
+ANUSFR	Substring and five rules	http://www.codechef.com/problems/ANUSFR	2014-10-01	hard	(8,15.00)
+M2	Motorbike Racing	http://www.codechef.com/problems/M2	2010-01-15	hard	(9,22.08)
+LCM	Adding Least Common Multiples	http://www.codechef.com/problems/LCM	2010-05-06	hard	(9,11.36)
+PRUNING	Pruning Trees	http://www.codechef.com/problems/PRUNING	2011-01-07	hard	(9,60.61)
+N1	Treasure Hunting	http://www.codechef.com/problems/N1	2010-02-05	easy	(77,21.04)
+N4	Tri-Hexagonal Puzzle	http://www.codechef.com/problems/N4	2010-02-05	easy	(77,33.76)
+TR1	Rendezvous	http://www.codechef.com/problems/TR1	2010-04-10	easy	(77,15.97)
+CIRCUITS	Randomly Testing Circuits	http://www.codechef.com/problems/CIRCUITS	2010-06-07	easy	(77,33.57)
+FIRE	Brush Fire	http://www.codechef.com/problems/FIRE	2010-06-07	easy	(77,24.18)
+BOGOSORT	Bogosort	http://www.codechef.com/problems/BOGOSORT	2010-08-06	easy	(77,21.00)
+STEPUP	Stepping Up	http://www.codechef.com/problems/STEPUP	2010-09-10	easy	(77,24.95)
+BYTEISLE	Byteknights and Byteknaves	http://www.codechef.com/problems/BYTEISLE	2010-10-25	easy	(77,17.57)
+COUNTREL	Count Relations	http://www.codechef.com/problems/COUNTREL	2010-12-04	easy	(77,31.79)
+WINDOW2	Whole submatrix	http://www.codechef.com/problems/WINDOW2	2011-01-15	easy	(77,14.96)
+CPOINT	Central Point	http://www.codechef.com/problems/CPOINT	2011-03-07	easy	(77,15.51)
+BWALL	The Great Wall of Byteland	http://www.codechef.com/problems/BWALL	2011-03-16	easy	(77,38.41)
+RG_01	Maximal Score Path	http://www.codechef.com/problems/RG_01	2011-04-10	easy	(77,15.45)
+AEHASH	A-E Hash Function	http://www.codechef.com/problems/AEHASH	2011-06-11	easy	(77,20.47)
+SUPERPLN	Super-plane	http://www.codechef.com/problems/SUPERPLN	2011-06-14	easy	(77,15.38)
+RHOUSE	Houses and Restaurants	http://www.codechef.com/problems/RHOUSE	2011-11-11	easy	(77,15.94)
+KSUBSUM	Makx Sum	http://www.codechef.com/problems/KSUBSUM	2012-01-09	easy	(77,11.88)
+DDISH	Delicious Dishes	http://www.codechef.com/problems/DDISH	2012-08-13	easy	(77,10.10)
+TABUS	Traveling Plan	http://www.codechef.com/problems/TABUS	2013-01-26	easy	(77,6.59)
+SEAGRP	Sereja and Graph	http://www.codechef.com/problems/SEAGRP	2013-06-09	easy	(77,22.53)
+CUBE	Cube Cakes	http://www.codechef.com/problems/CUBE	2013-10-01	easy	(77,18.95)
+NUMPATH	Number of Paths	http://www.codechef.com/problems/NUMPATH	2013-10-28	easy	(77,18.04)
+TRSUBTR	Trees and Subtrees	http://www.codechef.com/problems/TRSUBTR	2013-10-28	easy	(77,22.89)
+GERALD05	Chef and Combinatorics	http://www.codechef.com/problems/GERALD05	2013-12-10	easy	(77,36.56)
+A6	Some More Homework	http://www.codechef.com/problems/A6	2008-12-01	easy	(78,5.00)
+C4	Healthy dinner party	http://www.codechef.com/problems/C4	2009-04-20	easy	(78,19.42)
+F1	Golf course	http://www.codechef.com/problems/F1	2009-07-10	easy	(78,7.94)
+K1	Plant Location	http://www.codechef.com/problems/K1	0002-11-30	easy	(78,26.00)
+TRIP	Trip	http://www.codechef.com/problems/TRIP	2010-03-20	easy	(78,10.17)
+NICEQUAD	Nice Quadrangles	http://www.codechef.com/problems/NICEQUAD	2010-04-09	easy	(78,8.15)
+PRIMPATT	Prime Pattern	http://www.codechef.com/problems/PRIMPATT	2010-05-03	easy	(78,13.16)
+MAXCROSS	Maximal crosses	http://www.codechef.com/problems/MAXCROSS	2010-05-04	easy	(78,20.00)
+COURSE	Obstacle Course	http://www.codechef.com/problems/COURSE	2010-06-09	easy	(78,4.73)
+OMAX	Omax	http://www.codechef.com/problems/OMAX	2011-01-30	easy	(78,18.98)
+TRAVELER	Chef Travel Routes	http://www.codechef.com/problems/TRAVELER	2011-10-17	easy	(78,35.02)
+LUCKY2	Lucky Number	http://www.codechef.com/problems/LUCKY2	2011-11-11	easy	(78,9.08)
+LEMAGIC	Little Elephant and Magic	http://www.codechef.com/problems/LEMAGIC	2012-03-20	easy	(78,31.38)
+DOWNLOAD	Alien Chefs	http://www.codechef.com/problems/DOWNLOAD	2012-06-11	easy	(78,1.75)
+CIELMAP	Ciel and Map	http://www.codechef.com/problems/CIELMAP	2012-07-04	easy	(78,23.41)
+RRGAME	Game	http://www.codechef.com/problems/RRGAME	2013-09-12	easy	(78,19.59)
+A3	The Guessing Game	http://www.codechef.com/problems/A3	2008-12-01	easy	(79,6.17)
+H1	A puzzle game	http://www.codechef.com/problems/H1	2009-09-15	easy	(79,22.86)
+FLUSHOT	Flu Shot Lineup	http://www.codechef.com/problems/FLUSHOT	2010-11-07	easy	(79,19.97)
+SNAKY	Snake Snaky	http://www.codechef.com/problems/SNAKY	2011-03-10	easy	(79,13.77)
+GROWGOLD	Golden Trees	http://www.codechef.com/problems/GROWGOLD	2012-06-07	easy	(79,8.60)
+CIRKILL	Circle of death	http://www.codechef.com/problems/CIRKILL	2013-06-09	easy	(79,32.41)
+NDUNGEON	Nikhils Dungeon	http://www.codechef.com/problems/NDUNGEON	2009-07-28	easy	(80,24.10)
+ASTRGAME	A String Game	http://www.codechef.com/problems/ASTRGAME	2010-10-28	easy	(80,8.81)
+RECTCNT	Rectangles Counting	http://www.codechef.com/problems/RECTCNT	2011-03-08	easy	(80,11.37)
+PACKBAND	Packing the Golden Triangles	http://www.codechef.com/problems/PACKBAND	2011-05-10	easy	(80,15.23)
+MOVES	Robot Movings	http://www.codechef.com/problems/MOVES	2011-08-22	easy	(80,17.29)
+IGAME	Infinite Grid Game	http://www.codechef.com/problems/IGAME	2011-07-07	easy	(81,34.18)
+LUCKPAL	Lucky Palin	http://www.codechef.com/problems/LUCKPAL	2011-08-27	easy	(81,15.69)
+HAREJUMP	Chefs new Pet	http://www.codechef.com/problems/HAREJUMP	2011-08-31	easy	(81,29.20)
+DEFACING	Defacing Score	http://www.codechef.com/problems/DEFACING	2013-01-02	easy	(82,9.11)
+CTEAMS	Chef Teams	http://www.codechef.com/problems/CTEAMS	2011-04-13	easy	(83,22.08)
+BIGPIZA	Socializing Game around Pizza	http://www.codechef.com/problems/BIGPIZA	2011-05-02	easy	(83,31.69)
+LUKYDRIV	Lucky Driving	http://www.codechef.com/problems/LUKYDRIV	2012-04-21	easy	(83,17.27)
+LOKBIL	Most Popular Friend	http://www.codechef.com/problems/LOKBIL	2011-06-14	easy	(84,24.31)
+LUCKYBAL	Little Elephant and Balance	http://www.codechef.com/problems/LUCKYBAL	2012-03-01	easy	(84,37.93)
+DIAMOND	Need More Diamonds	http://www.codechef.com/problems/DIAMOND	2012-09-17	easy	(84,26.82)
+BWKNIGHT	The Black and White Knights	http://www.codechef.com/problems/BWKNIGHT	2010-04-10	easy	(85,15.44)
+ATOMS	Breaking Into Atoms	http://www.codechef.com/problems/ATOMS	2011-01-30	easy	(85,39.66)
+LWS	Longest Weird Subsequence	http://www.codechef.com/problems/LWS	2011-07-29	easy	(86,41.51)
+A4	The Rise and Fall of Power	http://www.codechef.com/problems/A4	2008-12-01	easy	(87,5.29)
+SEATRSF	Sereja and Transformation	http://www.codechef.com/problems/SEATRSF	2013-06-09	easy	(87,25.12)
+TOURNAM	Tennis Tournament	http://www.codechef.com/problems/TOURNAM	2012-10-13	easy	(88,30.87)
+CHEFBRO	Younger Brother	http://www.codechef.com/problems/CHEFBRO	2011-07-25	easy	(91,30.27)
+TASTR	Level Of Difference	http://www.codechef.com/problems/TASTR	2013-01-27	easy	(91,10.29)
+ARRGAME2	Yet Another Nice Girl	http://www.codechef.com/problems/ARRGAME2	2013-08-02	easy	(92,17.79)
+LOWSUM	Lowest Sum	http://www.codechef.com/problems/LOWSUM	2013-10-28	easy	(92,9.22)
+WEIGHT	Weight of Numbers	http://www.codechef.com/problems/WEIGHT	2010-09-10	easy	(94,38.60)
+LUCKY10	Little Elephant and Order	http://www.codechef.com/problems/LUCKY10	2012-02-17	easy	(94,24.08)
+BINTOUR	Binary Tournament	http://www.codechef.com/problems/BINTOUR	2014-01-21	easy	(94,31.94)
+DISHDIS	Dish Distribution	http://www.codechef.com/problems/DISHDIS	2011-08-02	easy	(97,20.60)
+LEBALONS	Little Elephant and Balloons	http://www.codechef.com/problems/LEBALONS	2012-04-25	easy	(98,16.08)
+NI01	Jurassic Park	http://www.codechef.com/problems/NI01	2012-11-02	easy	(98,24.92)
+LEMOUSE	Little Elephant and Mouses	http://www.codechef.com/problems/LEMOUSE	2012-03-20	easy	(100,35.90)
+CAKEDOOM	Doom Bakes Cakes	http://www.codechef.com/problems/CAKEDOOM	2012-04-16	easy	(101,17.04)
+FLOORI4	Flooring	http://www.codechef.com/problems/FLOORI4	2014-07-21	easy	(101,13.39)
+GENARSEQ	Generalized Arithmetic Progression Free Sequence	http://www.codechef.com/problems/GENARSEQ	2011-10-05	easy	(103,22.42)
+TRMAG	BIT Magazine	http://www.codechef.com/problems/TRMAG	2011-07-29	easy	(104,35.06)
+INSOMA2	Exploding Search	http://www.codechef.com/problems/INSOMA2	2009-03-19	easy	(106,24.75)
+DREAM	Chef's Dream	http://www.codechef.com/problems/DREAM	2012-04-10	easy	(106,37.71)
+MIKE3	Mike and Stamps	http://www.codechef.com/problems/MIKE3	2014-01-26	easy	(106,24.72)
+UASEQ	Chef and sequence	http://www.codechef.com/problems/UASEQ	2014-06-24	easy	(106,30.70)
+EQUALIZ	Equalization	http://www.codechef.com/problems/EQUALIZ	2012-10-04	easy	(108,41.27)
+CHODE	Chef and Codes	http://www.codechef.com/problems/CHODE	2013-10-06	easy	(109,30.72)
+TANGDIV	Divide the Tangerine	http://www.codechef.com/problems/TANGDIV	2014-02-28	easy	(109,27.16)
+DRGHTS	Draughts	http://www.codechef.com/problems/DRGHTS	2013-06-15	easy	(111,17.44)
+LUCKY1	Lucky Count	http://www.codechef.com/problems/LUCKY1	2011-11-11	easy	(112,40.79)
+SPOONS	Project Spoon	http://www.codechef.com/problems/SPOONS	2013-07-15	easy	(114,29.48)
+GAMEAAM	Subtraction Game	http://www.codechef.com/problems/GAMEAAM	2014-01-15	easy	(114,28.39)
+LEEXAMS	Little Elephant and Exams	http://www.codechef.com/problems/LEEXAMS	2012-04-10	easy	(115,35.13)
+WSTRING	W String	http://www.codechef.com/problems/WSTRING	2013-04-27	easy	(117,18.01)
+LIFE	One Dimensional Game of Life	http://www.codechef.com/problems/LIFE	2010-11-10	easy	(120,48.77)
+CIELNUM1	Ciel Numbers I	http://www.codechef.com/problems/CIELNUM1	2012-02-27	easy	(120,28.98)
+CHEFSQUA	Chef and Square	http://www.codechef.com/problems/CHEFSQUA	2014-04-03	easy	(120,26.42)
+MAXPR	Maxim and Progressions	http://www.codechef.com/problems/MAXPR	2013-05-25	easy	(121,20.22)
+FTRIP	Field Trip	http://www.codechef.com/problems/FTRIP	2013-03-27	easy	(123,25.07)
+CAOS2	CAO Stage-2	http://www.codechef.com/problems/CAOS2	2013-07-16	easy	(123,24.42)
+SHUTTLE	Free Shuttle Service	http://www.codechef.com/problems/SHUTTLE	2011-12-26	easy	(127,40.70)
+LEBAMBOO	Little Elephant and Bamboo	http://www.codechef.com/problems/LEBAMBOO	2012-04-06	easy	(128,23.90)
+CHEFBM	Chef and Strange Matrix	http://www.codechef.com/problems/CHEFBM	2014-03-18	easy	(128,13.69)
+PPXOR	Polo the Penguin and the XOR	http://www.codechef.com/problems/PPXOR	2013-09-30	easy	(132,24.66)
+RDF	Random decreasing function	http://www.codechef.com/problems/RDF	2012-08-07	easy	(133,36.28)
+PRETNUM	Yet Another Cute Girl	http://www.codechef.com/problems/PRETNUM	2013-08-15	easy	(133,18.42)
+COLARR	Colored Array	http://www.codechef.com/problems/COLARR	2014-01-07	easy	(133,28.42)
+CNPIIM	Counting Matrices	http://www.codechef.com/problems/CNPIIM	2013-12-02	easy	(135,25.68)
+DUMPLING	Greatest Dumpling Fight	http://www.codechef.com/problems/DUMPLING	2012-03-03	easy	(138,30.32)
+FATCHEF	Remy paints the fence	http://www.codechef.com/problems/FATCHEF	2012-04-12	easy	(138,19.77)
+MVCOIN	Moving Coins	http://www.codechef.com/problems/MVCOIN	2011-11-04	easy	(139,36.17)
+REIGN	Reign	http://www.codechef.com/problems/REIGN	2013-11-06	easy	(139,36.79)
+RACELANE	Painting Racing Lanes	http://www.codechef.com/problems/RACELANE	2010-10-12	easy	(140,34.94)
+YNOUTPUT	Forced Output	http://www.codechef.com/problems/YNOUTPUT	2012-08-07	easy	(140,32.10)
+LECARDS	Little Elephant and Cards	http://www.codechef.com/problems/LECARDS	2012-04-09	easy	(141,30.47)
+CHEFTOWN	ChefTown Parade	http://www.codechef.com/problems/CHEFTOWN	2012-08-03	easy	(141,25.64)
+PANSTACK	Stacking Pancakes	http://www.codechef.com/problems/PANSTACK	2012-03-01	easy	(143,30.73)
+TREEGAME	Tree Game	http://www.codechef.com/problems/TREEGAME	2014-04-14	easy	(143,31.09)
+SNCK04	Rational Numbers	http://www.codechef.com/problems/SNCK04	2009-11-16	easy	(144,16.86)
+GALACTIK	Galactik Football	http://www.codechef.com/problems/GALACTIK	2013-04-06	easy	(145,22.89)
+CROWD	Three is Crowd	http://www.codechef.com/problems/CROWD	2012-08-05	easy	(148,14.92)
+CHEFHACK	End Of The World	http://www.codechef.com/problems/CHEFHACK	2012-10-31	easy	(148,23.90)
+RAINBOWB	Chef and Rainbow Array - 2	http://www.codechef.com/problems/RAINBOWB	2014-03-17	easy	(149,29.73)
+D6	Count the squares	http://www.codechef.com/problems/D6	2009-05-28	easy	(153,23.29)
+K2	Palindromic Numbers	http://www.codechef.com/problems/K2	0002-11-30	easy	(154,7.47)
+RRATING	Restaurant Rating	http://www.codechef.com/problems/RRATING	2012-05-31	easy	(154,18.02)
+NEWSCH	The New Scheme	http://www.codechef.com/problems/NEWSCH	2012-08-10	easy	(158,39.04)
+MKSQR	Make A Square	http://www.codechef.com/problems/MKSQR	2010-09-10	easy	(159,34.88)
+NEXTNUM	Rank of the Number	http://www.codechef.com/problems/NEXTNUM	2013-11-01	easy	(159,27.14)
+NDLVOTE	Vote for the Noodle Soup	http://www.codechef.com/problems/NDLVOTE	2011-07-29	easy	(161,25.74)
+LEALCO	Little Elephant and Alcohol	http://www.codechef.com/problems/LEALCO	2012-03-20	easy	(163,42.27)
+LEMUSIC	Little Elephant and Music	http://www.codechef.com/problems/LEMUSIC	2012-04-15	easy	(163,20.56)
+COUNTPAL	Count palindromes	http://www.codechef.com/problems/COUNTPAL	2010-08-06	easy	(166,36.11)
+RECTQUER	Rectangular Queries	http://www.codechef.com/problems/RECTQUER	2013-11-06	easy	(166,35.14)
+COLLIDE	Collision in Space	http://www.codechef.com/problems/COLLIDE	2012-01-09	easy	(167,24.85)
+PRLADDU	DevuLand, Dinosaurs and Laddus	http://www.codechef.com/problems/PRLADDU	2014-09-15	easy	(169,34.82)
+GRAYSC	The Gray-Similar Code	http://www.codechef.com/problems/GRAYSC	2012-05-09	easy	(172,23.34)
+WITMATH	Witua and Math	http://www.codechef.com/problems/WITMATH	2012-08-02	easy	(173,30.48)
+NI02	KGP Summers	http://www.codechef.com/problems/NI02	2012-11-02	easy	(173,33.41)
+FORGETPW	Forgot Password	http://www.codechef.com/problems/FORGETPW	2014-05-09	easy	(173,23.40)
+CUBESUM	Sums in a cuboid	http://www.codechef.com/problems/CUBESUM	2009-06-18	easy	(176,41.04)
+SHIRO	Save The Princess	http://www.codechef.com/problems/SHIRO	2013-03-27	easy	(181,39.20)
+REVERSE	Chef and Reversing	http://www.codechef.com/problems/REVERSE	2014-03-09	easy	(185,25.31)
+FCBARCA	Barcelona Gameplay Tactics	http://www.codechef.com/problems/FCBARCA	2012-10-28	easy	(186,33.29)
+PRPOTION	Magical Girl and Colored Liquid Potions	http://www.codechef.com/problems/PRPOTION	2014-09-10	easy	(187,39.00)
+CHMOD	Chef and Segments	http://www.codechef.com/problems/CHMOD	2013-05-11	easy	(188,15.71)
+DIVQUERY	Chef and The Divisibility Queries	http://www.codechef.com/problems/DIVQUERY	2013-08-10	easy	(188,28.76)
+CLETAB	Cleaning Tables	http://www.codechef.com/problems/CLETAB	2014-07-03	easy	(190,22.13)
+DELISH	Dessert Wizard	http://www.codechef.com/problems/DELISH	2013-03-30	easy	(191,25.29)
+LPAIR	Chef and Reunion	http://www.codechef.com/problems/LPAIR	2014-02-08	easy	(199,33.05)
+TOURMAP	Sridhar Likes Travelling	http://www.codechef.com/problems/TOURMAP	2012-10-03	easy	(200,25.53)
+MTRICK	Magic Trick	http://www.codechef.com/problems/MTRICK	2012-02-18	easy	(201,22.77)
+GERALD03	Chef Goes Through Segments	http://www.codechef.com/problems/GERALD03	2013-11-13	easy	(202,37.52)
+SGARDEN	Garden Game	http://www.codechef.com/problems/SGARDEN	2014-01-22	easy	(205,19.50)
+ROTATION	Fun with Rotation	http://www.codechef.com/problems/ROTATION	2014-07-21	easy	(205,25.29)
+A2	Johnny and the Beanstalk	http://www.codechef.com/problems/A2	2008-12-01	easy	(206,30.93)
+COOLGUYS	Cool Guys	http://www.codechef.com/problems/COOLGUYS	2013-05-01	easy	(206,25.43)
+CIELTOMY	Ciel and Tomya	http://www.codechef.com/problems/CIELTOMY	2012-07-04	easy	(207,32.78)
+BEX	Book Exercises	http://www.codechef.com/problems/BEX	2012-09-06	easy	(211,14.67)
+AMSGAME2	Subtraction Game 2	http://www.codechef.com/problems/AMSGAME2	2013-05-11	easy	(213,32.20)
+PAIRSUM	Sum of pairs	http://www.codechef.com/problems/PAIRSUM	2009-07-21	easy	(214,15.33)
+TWODOGS	Make Him Happy	http://www.codechef.com/problems/TWODOGS	2013-11-06	easy	(214,23.04)
+MAXCOMP	Event Organizer	http://www.codechef.com/problems/MAXCOMP	2012-05-31	easy	(216,39.90)
+KINGCON	Kingdom Unity	http://www.codechef.com/problems/KINGCON	2013-01-26	easy	(218,25.68)
+HDELIVER	Home Delivery	http://www.codechef.com/problems/HDELIVER	2012-01-18	easy	(220,30.06)
+PREDICT	Predictopus	http://www.codechef.com/problems/PREDICT	2013-04-22	easy	(220,43.27)
+ADIGIT	Chef and Digits	http://www.codechef.com/problems/ADIGIT	2014-02-20	easy	(220,18.70)
+TPRODUCT	Tree Product	http://www.codechef.com/problems/TPRODUCT	2011-02-21	easy	(221,16.95)
+DIGROT	Digit Rotation	http://www.codechef.com/problems/DIGROT	2011-09-02	easy	(221,18.31)
+TWSTR	Remember the recipe	http://www.codechef.com/problems/TWSTR	2012-03-28	easy	(221,33.71)
+CRAWA	The Leaking Robot	http://www.codechef.com/problems/CRAWA	2014-04-25	easy	(228,24.84)
+FGFS	Bon Appetit	http://www.codechef.com/problems/FGFS	2013-12-07	easy	(229,23.45)
+SUBMIN	Little Elephant and Subarrays	http://www.codechef.com/problems/SUBMIN	2014-01-03	easy	(230,44.92)
+CIEL8STR	Ciel and New Menu	http://www.codechef.com/problems/CIEL8STR	2011-11-21	easy	(236,19.04)
+SPREAD	Gravel	http://www.codechef.com/problems/SPREAD	2010-05-05	easy	(237,19.18)
+CSUMD	My Fair Coins	http://www.codechef.com/problems/CSUMD	2012-05-05	easy	(237,32.22)
+LEVY	Levy Conjecture	http://www.codechef.com/problems/LEVY	2013-03-07	easy	(238,29.46)
+ACMKANPD	A New Number System	http://www.codechef.com/problems/ACMKANPD	2010-10-27	easy	(241,25.73)
+CHEFGR	Chef and Ground	http://www.codechef.com/problems/CHEFGR	2014-03-10	easy	(241,31.60)
+ALETHIO	Lyra and the Alethiometer	http://www.codechef.com/problems/ALETHIO	2013-06-03	easy	(244,23.02)
+CAOS1	CAO Stage-1	http://www.codechef.com/problems/CAOS1	2013-07-16	easy	(246,41.75)
+INTEG	Chef and Integers	http://www.codechef.com/problems/INTEG	2013-06-18	easy	(248,18.14)
+DRANGE	Range of Data	http://www.codechef.com/problems/DRANGE	2012-07-01	easy	(251,14.92)
+SPOTWO	Superpowers of 2	http://www.codechef.com/problems/SPOTWO	2013-03-17	easy	(259,37.01)
+CHEFLR	Chef and Left-Right	http://www.codechef.com/problems/CHEFLR	2014-03-26	easy	(260,28.31)
+TMSLT	Team Split	http://www.codechef.com/problems/TMSLT	2013-12-18	easy	(264,21.27)
+CLMBSTRS	Climbing Stairs	http://www.codechef.com/problems/CLMBSTRS	2012-12-09	easy	(265,33.47)
+TAAPLUSB	A Plus B Again!	http://www.codechef.com/problems/TAAPLUSB	2013-05-15	easy	(270,45.14)
+D1	Product of divisors	http://www.codechef.com/problems/D1	2009-05-05	easy	(271,6.86)
+GUESS	Guessing Game	http://www.codechef.com/problems/GUESS	2014-04-20	easy	(271,36.60)
+DIGJUMP	Chef and Digit Jumps	http://www.codechef.com/problems/DIGJUMP	2014-03-12	easy	(275,20.81)
+CVOTE	Chef of the Year	http://www.codechef.com/problems/CVOTE	2012-12-03	easy	(279,40.65)
+DISHOWN	Dish Owner	http://www.codechef.com/problems/DISHOWN	2014-04-25	easy	(286,24.76)
+CHRECT	Chef and Walking on the rectangle	http://www.codechef.com/problems/CHRECT	2013-05-11	easy	(290,42.11)
+RETPO	Reach The Point	http://www.codechef.com/problems/RETPO	2014-04-25	easy	(299,33.79)
+FROGV	Chef and Frogs	http://www.codechef.com/problems/FROGV	2014-03-10	easy	(303,24.08)
+PERMSUFF	Permutation Shuffle	http://www.codechef.com/problems/PERMSUFF	2014-04-21	easy	(304,26.01)
+MARBLEGF	Funny Marbles	http://www.codechef.com/problems/MARBLEGF	2013-11-04	easy	(307,26.05)
+WCOUNT	Word Couting	http://www.codechef.com/problems/WCOUNT	2012-01-17	easy	(310,23.03)
+MISINTER	Misinterpretation	http://www.codechef.com/problems/MISINTER	2011-07-13	easy	(314,50.59)
+EQIDLIS	Distribute idlis Equally	http://www.codechef.com/problems/EQIDLIS	2011-05-18	easy	(317,28.31)
+LELEMON	Little Elephant and Lemonade	http://www.codechef.com/problems/LELEMON	2012-04-25	easy	(319,48.89)
+MSTICK	Matchsticks	http://www.codechef.com/problems/MSTICK	2012-06-22	easy	(321,19.99)
+CAKE1AM	Chef and the Cake I	http://www.codechef.com/problems/CAKE1AM	2014-01-06	easy	(321,38.85)
+PPNUM	Polo the Penguin and the Numbers	http://www.codechef.com/problems/PPNUM	2013-09-23	easy	(325,23.32)
+DBOY	Pizza Delivery	http://www.codechef.com/problems/DBOY	2012-10-27	easy	(333,31.66)
+MAANDI	Maxim and Dividers	http://www.codechef.com/problems/MAANDI	2013-05-25	easy	(337,40.64)
+CHEFTEAM	Chef team	http://www.codechef.com/problems/CHEFTEAM	2011-01-14	easy	(338,15.23)
+DRGNBOOL	Fierce Battles	http://www.codechef.com/problems/DRGNBOOL	2012-04-19	easy	(339,52.90)
+GARDENSQ	Garden Squares	http://www.codechef.com/problems/GARDENSQ	2011-07-14	easy	(340,46.34)
+KPRIME	Count K-Primes	http://www.codechef.com/problems/KPRIME	2013-06-03	easy	(341,24.75)
+MGCRNK	Magic Rankings	http://www.codechef.com/problems/MGCRNK	2012-09-19	easy	(346,29.66)
+PRIMES2	A Prime Conjecture	http://www.codechef.com/problems/PRIMES2	2011-04-07	easy	(349,26.68)
+CKISSHUG	Kisses & Hugs	http://www.codechef.com/problems/CKISSHUG	2012-04-12	easy	(350,28.68)
+TAPALIN	Palindrome	http://www.codechef.com/problems/TAPALIN	2013-01-26	easy	(350,33.25)
+SDSQUARE	Square Digit Squares	http://www.codechef.com/problems/SDSQUARE	2013-10-04	easy	(356,26.01)
+PNTNG	Painting	http://www.codechef.com/problems/PNTNG	2014-05-31	easy	(361,32.03)
+MCHAIRS	Missing some chairs	http://www.codechef.com/problems/MCHAIRS	2013-10-05	easy	(364,33.39)
+CIELNUM2	Ciel Numbers II	http://www.codechef.com/problems/CIELNUM2	2012-02-27	easy	(369,19.36)
+HOMDEL	Delivery Boy	http://www.codechef.com/problems/HOMDEL	2012-07-01	easy	(380,43.39)
+PROB	The Probability Of Winning	http://www.codechef.com/problems/PROB	2013-04-28	easy	(388,59.52)
+CHEFZOT	Chef and Subarray	http://www.codechef.com/problems/CHEFZOT	2014-03-18	easy	(389,45.42)
+BINTREE	Shortest Path in Binary Trees	http://www.codechef.com/problems/BINTREE	2014-03-21	easy	(405,55.02)
+COMPILER	Compilers and parsers	http://www.codechef.com/problems/COMPILER	2014-01-21	easy	(417,33.10)
+PPTEST	Polo the Penguin and the Test	http://www.codechef.com/problems/PPTEST	2013-09-23	easy	(418,43.35)
+MONTRANS	Money Transformation	http://www.codechef.com/problems/MONTRANS	2011-03-06	easy	(419,28.61)
+AMIFIB	Am I a Fibonacci Number	http://www.codechef.com/problems/AMIFIB	2013-10-28	easy	(425,21.71)
+LCPESY	Longest Common Pattern	http://www.codechef.com/problems/LCPESY	2013-12-19	easy	(425,35.39)
+ANUARM	The Army	http://www.codechef.com/problems/ANUARM	2014-09-30	easy	(428,42.67)
+PROSUM	Little Chef and Numbers	http://www.codechef.com/problems/PROSUM	2014-01-26	easy	(433,23.82)
+RRMATRIX	Strange Matrix	http://www.codechef.com/problems/RRMATRIX	2013-09-04	easy	(435,33.62)
+HELLO	Hello Hello	http://www.codechef.com/problems/HELLO	2013-01-29	easy	(450,34.48)
+HELPLIRA	Helping Lira	http://www.codechef.com/problems/HELPLIRA	2013-02-26	easy	(460,30.63)
+SUBANAGR	Subanagrams	http://www.codechef.com/problems/SUBANAGR	2011-11-04	easy	(464,44.38)
+FLAGS	Counting Flags	http://www.codechef.com/problems/FLAGS	2014-05-31	easy	(464,45.62)
+KINGSHIP	Chef and Kingship	http://www.codechef.com/problems/KINGSHIP	2014-01-31	easy	(465,44.34)
+CSUB	Count Substrings	http://www.codechef.com/problems/CSUB	2014-04-20	easy	(469,31.55)
+GRANAMA	Granama Recipes	http://www.codechef.com/problems/GRANAMA	2012-08-28	easy	(470,30.60)
+GRID	Sherlock and the Grid	http://www.codechef.com/problems/GRID	2014-06-05	easy	(471,32.49)
+E1	The White Knight	http://www.codechef.com/problems/E1	2009-06-05	easy	(473,23.70)
+FIRESC	Fire Escape Routes	http://www.codechef.com/problems/FIRESC	2013-02-03	easy	(476,32.50)
+A1	Paying up	http://www.codechef.com/problems/A1	2008-12-01	easy	(488,46.06)
+AMMEAT2	Andrew and the Meatballs again	http://www.codechef.com/problems/AMMEAT2	2013-04-21	easy	(490,44.56)
+POKER	Poker	http://www.codechef.com/problems/POKER	2008-12-01	easy	(494,29.70)
+THREEDIF	Three Different Numbers	http://www.codechef.com/problems/THREEDIF	2013-01-05	easy	(495,31.48)
+RRSTONE	Stone	http://www.codechef.com/problems/RRSTONE	2014-04-14	easy	(497,22.37)
+GERALD04	Chef and Girlfriend	http://www.codechef.com/problems/GERALD04	2013-12-09	easy	(498,35.38)
+SAD	Gift Rift	http://www.codechef.com/problems/SAD	2012-05-15	easy	(504,37.38)
+MANYCHEF	Many Chefs	http://www.codechef.com/problems/MANYCHEF	2013-01-02	easy	(516,38.67)
+LASTDIG	Last Digit Sum	http://www.codechef.com/problems/LASTDIG	2011-09-02	easy	(519,15.43)
+NAME1	Name Reduction	http://www.codechef.com/problems/NAME1	2013-03-27	easy	(520,38.02)
+PAIRING	Pairing Chefs	http://www.codechef.com/problems/PAIRING	2010-12-04	easy	(521,55.00)
+RESIST	Resistance	http://www.codechef.com/problems/RESIST	2012-04-03	easy	(528,48.53)
+DAILY	Daily Train	http://www.codechef.com/problems/DAILY	2012-01-24	easy	(538,47.23)
+WALK	Walk	http://www.codechef.com/problems/WALK	2014-01-21	easy	(543,39.99)
+PRGIFT	Chef and Gift	http://www.codechef.com/problems/PRGIFT	2014-07-15	easy	(543,24.89)
+ANUWTA	Walk on the Axis	http://www.codechef.com/problems/ANUWTA	2014-09-30	easy	(563,38.70)
+MIME2	Internet Media Types	http://www.codechef.com/problems/MIME2	2011-04-12	easy	(570,34.56)
+APPROX	Approximately	http://www.codechef.com/problems/APPROX	2012-12-26	easy	(605,53.39)
+POTATOES	Farmer Feb	http://www.codechef.com/problems/POTATOES	2014-01-05	easy	(607,51.47)
+SPOON	Spoon in Matrix	http://www.codechef.com/problems/SPOON	2012-01-18	easy	(625,39.75)
+RRCODE	Code	http://www.codechef.com/problems/RRCODE	2013-09-19	easy	(638,22.27)
+PLZLYKME	Please like me	http://www.codechef.com/problems/PLZLYKME	2013-12-08	easy	(640,29.07)
+NOLOGIC	Lack of Logic	http://www.codechef.com/problems/NOLOGIC	2013-02-06	easy	(641,34.73)
+CIELDIST	Minimum Distance	http://www.codechef.com/problems/CIELDIST	2013-01-02	easy	(661,36.26)
+RRSUM	Sum Queries	http://www.codechef.com/problems/RRSUM	2014-07-11	easy	(671,39.18)
+LEDIV	Little Elephant and Divisors	http://www.codechef.com/problems/LEDIV	2012-10-20	easy	(690,21.22)
+SUBGCD	Subarray GCD	http://www.codechef.com/problems/SUBGCD	2014-06-13	easy	(701,44.91)
+DIRECTI	Reversing directions	http://www.codechef.com/problems/DIRECTI	2012-11-26	easy	(720,48.13)
+ARRANGE	Arranging the Appetizers	http://www.codechef.com/problems/ARRANGE	2010-08-09	easy	(729,50.46)
+EQUATION	A Simple Equation	http://www.codechef.com/problems/EQUATION	2010-09-10	easy	(745,23.43)
+AMMEAT	Andrew and the Meatballs	http://www.codechef.com/problems/AMMEAT	2013-03-28	easy	(756,30.70)
+OJUMPS	Chef-jumping	http://www.codechef.com/problems/OJUMPS	2014-02-19	easy	(762,42.70)
+RRCOPY	Copy-Paste	http://www.codechef.com/problems/RRCOPY	2014-07-05	easy	(766,48.30)
+KNIGHTMV	Correctness of Knight Move	http://www.codechef.com/problems/KNIGHTMV	2011-06-13	easy	(776,24.79)
+SALARY	The Minimum Number Of Moves	http://www.codechef.com/problems/SALARY	2012-10-24	easy	(788,43.55)
+ROWCOLOP	Row and Column Operations	http://www.codechef.com/problems/ROWCOLOP	2013-02-06	easy	(809,40.01)
+PLAYFIT	Fit to Play	http://www.codechef.com/problems/PLAYFIT	2012-01-20	easy	(816,32.21)
+TACHSTCK	Chopsticks	http://www.codechef.com/problems/TACHSTCK	2013-05-15	easy	(819,40.12)
+ALEXNUMB	Magic Pairs	http://www.codechef.com/problems/ALEXNUMB	2013-11-05	easy	(841,31.95)
+ATTIC	Attic Crossing	http://www.codechef.com/problems/ATTIC	2013-06-03	easy	(861,50.48)
+COMMUTE	The Morning Commute	http://www.codechef.com/problems/COMMUTE	2010-12-04	easy	(864,52.01)
+DIVIDING	Dividing Stamps	http://www.codechef.com/problems/DIVIDING	2014-02-24	easy	(882,46.58)
+LUCKY5	Lucky Long	http://www.codechef.com/problems/LUCKY5	2011-12-05	easy	(913,47.68)
+ANUDTC	Divide the Cake	http://www.codechef.com/problems/ANUDTC	2014-04-13	easy	(939,52.01)
+NOCODING	Code Crazy Minions	http://www.codechef.com/problems/NOCODING	2012-08-07	easy	(973,55.45)
+LUCKYSTR	Little Elephant and Strings	http://www.codechef.com/problems/LUCKYSTR	2012-03-01	easy	(990,52.34)
+TOTR	Tourist Translations	http://www.codechef.com/problems/TOTR	2012-09-07	easy	(1026,55.06)
+ERROR	Chef and Feedback	http://www.codechef.com/problems/ERROR	2013-12-11	easy	(1034,42.75)
+FACTSUM	Super Factor Sum	http://www.codechef.com/problems/FACTSUM	2008-12-01	medium	(11,3.24)
+C2	The powerful sum	http://www.codechef.com/problems/C2	2009-04-20	medium	(11,4.83)
+C3	Prime words	http://www.codechef.com/problems/C3	2009-04-20	medium	(11,13.68)
+K3	Maze of Digits	http://www.codechef.com/problems/K3	0002-11-30	medium	(11,62.26)
+VOTING	Closest Ranking	http://www.codechef.com/problems/VOTING	2010-04-10	medium	(11,34.21)
+TR2	Robot Game	http://www.codechef.com/problems/TR2	2010-04-10	medium	(11,22.39)
+PUZZLES	Newspaper Puzzle	http://www.codechef.com/problems/PUZZLES	2010-12-03	medium	(11,28.95)
+SEQUENCE	Integer Sequences	http://www.codechef.com/problems/SEQUENCE	2011-01-30	medium	(11,24.49)
+COOKOFF2	The Grand Cook Off	http://www.codechef.com/problems/COOKOFF2	2011-04-07	medium	(11,35.90)
+MEANMEDI	Mean Mean Medians	http://www.codechef.com/problems/MEANMEDI	2011-07-14	medium	(11,21.90)
+PARCOS	Cosine Partition Function	http://www.codechef.com/problems/PARCOS	2011-09-01	medium	(11,53.49)
+MAXGAME	Game Count	http://www.codechef.com/problems/MAXGAME	2012-05-15	medium	(11,41.67)
+ANDOOR	A New Door	http://www.codechef.com/problems/ANDOOR	2012-08-09	medium	(11,34.13)
+NI03	Weapons	http://www.codechef.com/problems/NI03	2012-11-02	medium	(11,35.48)
+J1	SudokuX	http://www.codechef.com/problems/J1	2009-10-15	medium	(12,14.58)
+SNCK05	SUM12	http://www.codechef.com/problems/SNCK05	2009-11-16	medium	(12,13.79)
+BUILDING	Head office building	http://www.codechef.com/problems/BUILDING	2010-05-05	medium	(13,15.38)
+COOKOFF	Choosing Cook Off Problems	http://www.codechef.com/problems/COOKOFF	2010-11-09	medium	(13,16.67)
+PDSNUM	PDS Number	http://www.codechef.com/problems/PDSNUM	2011-08-23	medium	(13,18.07)
+CIELBTL	Ciel and Battle Arena	http://www.codechef.com/problems/CIELBTL	2011-11-23	medium	(13,34.85)
+HOB	Hotel Balifornia	http://www.codechef.com/problems/HOB	2012-09-09	medium	(13,18.10)
+TRANSFIG	Transfiguring Trees	http://www.codechef.com/problems/TRANSFIG	2013-06-07	medium	(13,22.41)
+STRDIG	Chef and The String of Digits	http://www.codechef.com/problems/STRDIG	2013-08-10	medium	(13,9.44)
+IDOLS	Idols and Fans	http://www.codechef.com/problems/IDOLS	2014-05-31	medium	(13,29.41)
+TFOSS	Fossil in the Ice	http://www.codechef.com/problems/TFOSS	2008-12-01	medium	(14,7.60)
+BESTSUM	Best Sums	http://www.codechef.com/problems/BESTSUM	2009-07-30	medium	(14,2.24)
+G3	A Coin Game	http://www.codechef.com/problems/G3	2009-08-15	medium	(15,20.73)
+M3	Soccer League	http://www.codechef.com/problems/M3	2010-01-15	medium	(15,11.43)
+ARITHPR	Longest Arithmetic Progressions	http://www.codechef.com/problems/ARITHPR	2011-06-10	medium	(15,18.75)
+FALLDOWN	Remys last tour	http://www.codechef.com/problems/FALLDOWN	2012-01-09	medium	(15,28.17)
+E4	Quadratic Equations	http://www.codechef.com/problems/E4	2009-06-05	medium	(16,16.33)
+CAREFUL	Careful Calculation	http://www.codechef.com/problems/CAREFUL	2012-01-17	medium	(16,36.49)
+FLY	Fly-overs	http://www.codechef.com/problems/FLY	2012-04-21	medium	(16,23.19)
+UNFRIEND	Rebuilding Byteland	http://www.codechef.com/problems/UNFRIEND	2012-08-04	medium	(16,41.46)
+BOMBING	Bombing	http://www.codechef.com/problems/BOMBING	2010-08-06	medium	(17,11.36)
+PALIPALI	Palindrome Palindrome	http://www.codechef.com/problems/PALIPALI	2011-03-06	medium	(17,12.87)
+COLCHAIN	Colorful Chain	http://www.codechef.com/problems/COLCHAIN	2011-10-02	medium	(17,30.00)
+C5	An interesting subsequence	http://www.codechef.com/problems/C5	2009-04-20	medium	(18,8.12)
+PHOTOS	The Traveling Photographer	http://www.codechef.com/problems/PHOTOS	2010-10-14	medium	(18,30.95)
+PARPOLY	Polynomial Partition Function	http://www.codechef.com/problems/PARPOLY	2011-09-02	medium	(18,26.00)
+OLYMPIC	Gifts at Olympics	http://www.codechef.com/problems/OLYMPIC	2012-06-08	medium	(18,8.02)
+PAINTING	Crease Painting	http://www.codechef.com/problems/PAINTING	2012-04-02	medium	(19,26.88)
+TMRATING	Best Buggy Ratings	http://www.codechef.com/problems/TMRATING	2012-04-11	medium	(19,47.22)
+DIVPRO	Dividing Products	http://www.codechef.com/problems/DIVPRO	2012-08-28	medium	(19,32.14)
+UNIQUE	Chef and Uniqueness	http://www.codechef.com/problems/UNIQUE	2014-01-31	medium	(19,27.78)
+GROUPING	Grouping Chefs	http://www.codechef.com/problems/GROUPING	2011-03-15	medium	(20,28.83)
+NEWREST	New Restaurant	http://www.codechef.com/problems/NEWREST	2011-09-06	medium	(20,24.60)
+FAVNUM	Favourite Numbers	http://www.codechef.com/problems/FAVNUM	2011-12-20	medium	(20,25.90)
+TRAINING	Selection for Training Camps	http://www.codechef.com/problems/TRAINING	2012-03-25	medium	(20,17.91)
+CHEFWD	Chef World	http://www.codechef.com/problems/CHEFWD	2012-05-03	medium	(20,16.94)
+MACGUN	Machine Gun	http://www.codechef.com/problems/MACGUN	2012-07-16	medium	(20,13.46)
+CHEFHCK2	End Of The World 2	http://www.codechef.com/problems/CHEFHCK2	2013-02-07	medium	(20,24.84)
+MINXOR	XOR Minimization	http://www.codechef.com/problems/MINXOR	2014-02-08	medium	(20,10.03)
+UPDTREE	Updating Edges on Trees	http://www.codechef.com/problems/UPDTREE	2014-09-15	medium	(20,29.51)
+TREES	Trees Again	http://www.codechef.com/problems/TREES	2010-08-20	medium	(21,39.06)
+CHESSGM	Chess Pushing Game	http://www.codechef.com/problems/CHESSGM	2010-10-29	medium	(21,35.06)
+TEAMSIZE	Team Formation	http://www.codechef.com/problems/TEAMSIZE	2011-10-06	medium	(21,38.67)
+TREEFUN	Tree Fun	http://www.codechef.com/problems/TREEFUN	2012-10-18	medium	(21,18.09)
+AMXOR	XOR Sum	http://www.codechef.com/problems/AMXOR	2013-05-10	medium	(21,45.65)
+INVITES	Party Planning	http://www.codechef.com/problems/INVITES	2013-06-07	medium	(21,26.36)
+TCP	Travelling Chef Problem	http://www.codechef.com/problems/TCP	2013-07-15	medium	(21,12.13)
+KUNIQUE	K-Unique Sequence	http://www.codechef.com/problems/KUNIQUE	2010-10-25	medium	(22,17.95)
+KNIGHTS	N Knights Problem	http://www.codechef.com/problems/KNIGHTS	2010-11-09	medium	(22,34.21)
+PARALLEL	Parallel Computing	http://www.codechef.com/problems/PARALLEL	2011-12-08	medium	(22,36.67)
+LUCKYSWP	Little Elephant and Swapping	http://www.codechef.com/problems/LUCKYSWP	2012-03-01	medium	(22,32.89)
+PTOSS	Pizza Tossing	http://www.codechef.com/problems/PTOSS	2012-03-09	medium	(22,19.53)
+JABO	Jam Board	http://www.codechef.com/problems/JABO	2012-09-06	medium	(22,17.99)
+AMBALLS	Andrew and the Balls	http://www.codechef.com/problems/AMBALLS	2013-04-19	medium	(22,42.05)
+TAACUTE	Counting The Acute Triangles	http://www.codechef.com/problems/TAACUTE	2013-07-16	medium	(22,22.89)
+STREGGS	Ciel and Eggs	http://www.codechef.com/problems/STREGGS	2011-08-23	medium	(23,23.12)
+RIVPILE	Across the River	http://www.codechef.com/problems/RIVPILE	2011-09-19	medium	(23,16.16)
+CIELQUIZ	Ciel and Quiz Game	http://www.codechef.com/problems/CIELQUIZ	2011-11-22	medium	(24,18.92)
+LUCKY9	Lucky Balance	http://www.codechef.com/problems/LUCKY9	2012-02-15	medium	(24,39.29)
+LEBLOCKS	Little Elephant and Blocks	http://www.codechef.com/problems/LEBLOCKS	2012-03-21	medium	(24,27.84)
+NI04	Small Airport	http://www.codechef.com/problems/NI04	2012-11-02	medium	(24,24.76)
+RRTREE2	Tree Again	http://www.codechef.com/problems/RRTREE2	2014-07-12	medium	(24,41.67)
+H4	Just a simple sum	http://www.codechef.com/problems/H4	2009-09-15	medium	(25,6.86)
+CHEFPASS	Codechef Password Recovery	http://www.codechef.com/problems/CHEFPASS	2012-08-06	medium	(25,47.54)
+CYLINDER	Cylinder	http://www.codechef.com/problems/CYLINDER	2013-03-11	medium	(25,41.50)
+ANUSAR	Substrings and Repetitions	http://www.codechef.com/problems/ANUSAR	2014-03-03	medium	(25,22.01)
+LUCKG	Lucky Game	http://www.codechef.com/problems/LUCKG	2014-04-25	medium	(25,33.54)
+XOR	Xor it	http://www.codechef.com/problems/XOR	2012-02-04	medium	(26,8.04)
+LEFEED	Andrew and the Birthday	http://www.codechef.com/problems/LEFEED	2012-03-20	medium	(26,40.00)
+PALIN3	3-Palindromes	http://www.codechef.com/problems/PALIN3	2014-02-08	medium	(26,16.43)
+MEDIAN	Little Elephant and Median	http://www.codechef.com/problems/MEDIAN	2011-12-05	medium	(27,16.92)
+WPLAY	Word Play	http://www.codechef.com/problems/WPLAY	2013-01-01	medium	(27,31.46)
+AMSEQT	Sequence Transmission	http://www.codechef.com/problems/AMSEQT	2013-05-17	medium	(27,34.86)
+J3	The N Queens Puzzle Revisited	http://www.codechef.com/problems/J3	2009-10-15	medium	(28,35.76)
+RIPPLE	Ripple-Carry Adder	http://www.codechef.com/problems/RIPPLE	2010-05-08	medium	(28,19.55)
+CHEFGIFT	Birthday Gift	http://www.codechef.com/problems/CHEFGIFT	2011-07-25	medium	(28,26.38)
+KCHIPS	Angry Chef - Crispy Chips	http://www.codechef.com/problems/KCHIPS	2011-08-07	medium	(28,20.57)
+REPSTR	Repeated String	http://www.codechef.com/problems/REPSTR	2011-08-22	medium	(28,25.93)
+LUCKY3	Lucky Sum	http://www.codechef.com/problems/LUCKY3	2011-11-21	medium	(28,37.86)
+LEBINARY	Asmany Number Verification	http://www.codechef.com/problems/LEBINARY	2012-08-08	medium	(28,31.30)
+H2	Kayaks	http://www.codechef.com/problems/H2	2009-09-15	medium	(30,16.03)
+TOOLS	Fetching Cooking Tools	http://www.codechef.com/problems/TOOLS	2010-08-09	medium	(30,30.84)
+CHEFINV	Chef and Swaps	http://www.codechef.com/problems/CHEFINV	2014-03-24	medium	(30,17.67)
+SEAGM	Sereja and Game	http://www.codechef.com/problems/SEAGM	2013-05-28	medium	(31,40.71)
+WTHINGS	Where the Wild Things Are	http://www.codechef.com/problems/WTHINGS	2014-05-30	medium	(31,21.91)
+JUNONGF	Juno Puzzle for May	http://www.codechef.com/problems/JUNONGF	2013-03-21	medium	(32,18.58)
+TACHEMIS	Compressed String	http://www.codechef.com/problems/TACHEMIS	2013-05-15	medium	(32,11.73)
+GANGAAM	Interrogating Gangsters	http://www.codechef.com/problems/GANGAAM	2014-01-17	medium	(32,30.53)
+RSRECIPE	Restore the Recipe	http://www.codechef.com/problems/RSRECIPE	2011-11-12	medium	(33,33.33)
+HOB2	Hotel Balifornia 2	http://www.codechef.com/problems/HOB2	2013-02-14	medium	(33,24.19)
+PROPOSAL	Primary Proposal	http://www.codechef.com/problems/PROPOSAL	2008-12-01	medium	(34,61.80)
+ACMKANPB	Bonus	http://www.codechef.com/problems/ACMKANPB	2010-10-27	medium	(34,14.63)
+BBSYSTEM	Box and Ball System	http://www.codechef.com/problems/BBSYSTEM	2011-08-29	medium	(34,24.88)
+CBARS	A Wonderful Chocolate	http://www.codechef.com/problems/CBARS	2012-08-02	medium	(34,44.23)
+PERMUTE	Just Some Permutations 3	http://www.codechef.com/problems/PERMUTE	2013-03-27	medium	(34,30.43)
+TAUT	Tautology	http://www.codechef.com/problems/TAUT	2008-12-01	medium	(35,32.74)
+MMADNESS	Monitoring Madness	http://www.codechef.com/problems/MMADNESS	2009-05-29	medium	(35,7.89)
+EXGCD	Expected Greatest Common Divisor	http://www.codechef.com/problems/EXGCD	2012-11-26	medium	(35,37.67)
+CHSEQ22	Chef and Favourite Sequence	http://www.codechef.com/problems/CHSEQ22	2013-11-17	medium	(35,42.24)
+B5	Squash the Bugs	http://www.codechef.com/problems/B5	2009-03-15	medium	(36,16.01)
+NUMSUM	Sum of numbers	http://www.codechef.com/problems/NUMSUM	2009-07-22	medium	(37,2.57)
+LEBOBBLE	Little Elephant and Bubble Sort	http://www.codechef.com/problems/LEBOBBLE	2012-05-10	medium	(37,53.57)
+METEORAK	Meteor	http://www.codechef.com/problems/METEORAK	2013-11-13	medium	(37,41.67)
+PREPARE	Preparing Dishes	http://www.codechef.com/problems/PREPARE	2010-12-03	medium	(38,23.44)
+CANDYGAM	Candy Collecting Game	http://www.codechef.com/problems/CANDYGAM	2012-08-28	medium	(38,27.07)
+LOGGERS	Logging Game	http://www.codechef.com/problems/LOGGERS	2010-07-18	medium	(39,42.15)
+EQUATIO	Equation Solver	http://www.codechef.com/problems/EQUATIO	2012-01-24	medium	(40,32.68)
+LIGHT	Lights	http://www.codechef.com/problems/LIGHT	2012-03-29	medium	(40,32.49)
+SEREJA	Sereja and Data Structures	http://www.codechef.com/problems/SEREJA	2012-08-02	medium	(40,23.05)
+LUCKY8	Little Elephant and Product	http://www.codechef.com/problems/LUCKY8	2012-02-03	medium	(43,24.73)
+CAOS3	CAO Stage-3	http://www.codechef.com/problems/CAOS3	2013-07-17	medium	(43,32.08)
+ANUCBC	Cards, bags and coins	http://www.codechef.com/problems/ANUCBC	2014-01-15	medium	(43,14.64)
+RRTREE	Tree	http://www.codechef.com/problems/RRTREE	2013-09-14	medium	(44,45.10)
+DDILEMMA	Domain Dilemma	http://www.codechef.com/problems/DDILEMMA	2009-06-10	medium	(45,9.54)
+RRBIGNUM	Big Number	http://www.codechef.com/problems/RRBIGNUM	2013-09-21	medium	(45,18.10)
+TREE	Tree Counting	http://www.codechef.com/problems/TREE	2012-11-05	medium	(47,47.01)
+SEABAL	Sereja and Ballons	http://www.codechef.com/problems/SEABAL	2013-06-05	medium	(49,34.26)
+PPLUCKY	Polo the Penguin and the Lucky String	http://www.codechef.com/problems/PPLUCKY	2013-09-21	medium	(51,11.07)
+ANUGCD	Maximum number, GCD condition	http://www.codechef.com/problems/ANUGCD	2014-01-23	medium	(52,26.76)
+ANUTDP	The Dirty Path	http://www.codechef.com/problems/ANUTDP	2014-09-26	medium	(55,15.64)
+PPTREE	Polo the Penguin and the Tree	http://www.codechef.com/problems/PPTREE	2013-10-09	medium	(56,29.29)
+TAKEAWAY	Zeta-Nim Game	http://www.codechef.com/problems/TAKEAWAY	2012-01-16	medium	(57,42.62)
+EQUAKE	Earthquake	http://www.codechef.com/problems/EQUAKE	2014-06-27	medium	(57,23.70)
+FRBSUM	ForbiddenSum	http://www.codechef.com/problems/FRBSUM	2013-10-18	medium	(59,46.58)
+SHOOTING	Shooting	http://www.codechef.com/problems/SHOOTING	2014-08-11	medium	(59,13.56)
+LEMOVIE	Little Elephant and Movies	http://www.codechef.com/problems/LEMOVIE	2012-03-20	medium	(61,35.15)
+NI05	Retail Shop	http://www.codechef.com/problems/NI05	2012-11-03	medium	(61,60.95)
+QNUMBER	Queries About Numbers	http://www.codechef.com/problems/QNUMBER	2012-07-15	medium	(62,15.43)
+MOU2H	Mountain Holidays 2	http://www.codechef.com/problems/MOU2H	2013-03-30	medium	(62,20.99)
+SNCK01	The Matrix Game	http://www.codechef.com/problems/SNCK01	2009-11-13	medium	(63,26.10)
+CHIEFETT	Pleasing Chief	http://www.codechef.com/problems/CHIEFETT	2011-07-14	medium	(63,20.95)
+CHEFGM	Chef Game	http://www.codechef.com/problems/CHEFGM	2012-08-22	medium	(66,29.17)
+TRIQUERY	Triangular Queries	http://www.codechef.com/problems/TRIQUERY	2012-11-04	medium	(66,34.82)
+MLCHEF	Merciless Chef	http://www.codechef.com/problems/MLCHEF	2013-01-22	medium	(67,31.15)
+AMSTRING	Andrew and the Strings	http://www.codechef.com/problems/AMSTRING	2013-03-28	medium	(67,31.21)
+TKCHOCS	Collect the Chocolate Chips	http://www.codechef.com/problems/TKCHOCS	2011-08-19	medium	(68,32.00)
+COLLECT	Collecting Magical Berries	http://www.codechef.com/problems/COLLECT	2012-11-30	medium	(69,32.85)
+MOU1H	Mountain Holidays	http://www.codechef.com/problems/MOU1H	2013-03-30	medium	(69,27.38)
+RRDAG	Present for Andrii	http://www.codechef.com/problems/RRDAG	2014-07-10	medium	(71,24.94)
+FUNC	Chef and Functions	http://www.codechef.com/problems/FUNC	2014-01-08	medium	(73,15.00)
+SEATSR	Sereja and two strings	http://www.codechef.com/problems/SEATSR	2013-06-05	medium	(74,18.17)
+BLOCKING	Block Game	http://www.codechef.com/problems/BLOCKING	2012-06-26	medium	(75,38.15)
+BICO	BiCo Gaming Grid	http://www.codechef.com/problems/BICO	2013-02-26	medium	(76,24.88)
+J2	The LCS Problem Revisited	http://www.codechef.com/problems/J2	2009-10-15	medium	(79,23.99)
+SSTORY	A Story with Strings	http://www.codechef.com/problems/SSTORY	2014-01-31	medium	(82,20.55)
+SQUIRREL	Squirrel and chestnut	http://www.codechef.com/problems/SQUIRREL	2010-05-05	medium	(83,18.32)
+CNTSOLS	The Number Of Solutions	http://www.codechef.com/problems/CNTSOLS	2013-04-04	medium	(83,20.48)
+SOLDIER	Help the soldier	http://www.codechef.com/problems/SOLDIER	2008-12-01	medium	(87,21.43)
+WW2	World War 2	http://www.codechef.com/problems/WW2	2014-08-19	medium	(88,32.42)
+ROTSTRNG	Rotate the String	http://www.codechef.com/problems/ROTSTRNG	2011-08-06	medium	(89,11.75)
+KMHAMHA	Kamehameha	http://www.codechef.com/problems/KMHAMHA	2013-09-12	medium	(92,38.62)
+MBOARD	Magic Board	http://www.codechef.com/problems/MBOARD	2012-10-15	medium	(93,27.58)
+DIVPAIR	Divisible Pairs	http://www.codechef.com/problems/DIVPAIR	2012-03-11	medium	(94,19.78)
+TYTACTIC	Tywins Tactics	http://www.codechef.com/problems/TYTACTIC	2013-06-07	medium	(99,18.31)
+ADDFRAC	Adding Fractions	http://www.codechef.com/problems/ADDFRAC	2010-03-20	medium	(109,14.45)
+ANUBGC	Book Game with Chef	http://www.codechef.com/problems/ANUBGC	2014-03-05	medium	(115,37.68)
+CHEFGAME	ChefGame	http://www.codechef.com/problems/CHEFGAME	2012-12-10	medium	(121,22.56)
+CNTWAYS	The Uncountable Ways	http://www.codechef.com/problems/CNTWAYS	2012-10-12	medium	(122,26.16)
+LEPAINT	Little Elephant and Painting	http://www.codechef.com/problems/LEPAINT	2012-03-20	medium	(138,60.00)
+CHEFHOME	A Home for Chef	http://www.codechef.com/problems/CHEFHOME	2012-04-09	medium	(142,32.58)
+MONEY	Money Matters	http://www.codechef.com/problems/MONEY	2010-01-26	medium	(144,13.45)
+BUTTONS	Buttons	http://www.codechef.com/problems/BUTTONS	2009-07-17	medium	(147,9.88)
+DIVGAME	Game of Divisors	http://www.codechef.com/problems/DIVGAME	2014-02-08	medium	(153,33.70)
+TSHIRTS	Little Elephant and T-Shirts	http://www.codechef.com/problems/TSHIRTS	2014-02-21	medium	(157,39.39)
+TETRA	Sphere in a tetrahedron	http://www.codechef.com/problems/TETRA	2008-12-01	medium	(159,59.80)
+COALSCAM	Coal Scam	http://www.codechef.com/problems/COALSCAM	2012-09-02	medium	(179,29.66)
+STADIUM	The Sports Stadium	http://www.codechef.com/problems/STADIUM	2009-07-28	medium	(188,28.05)
+KNPSK	Knapsack Problem	http://www.codechef.com/problems/KNPSK	2014-05-31	medium	(201,19.69)
+SUBLCM	Subarray LCM	http://www.codechef.com/problems/SUBLCM	2014-06-23	medium	(220,20.56)
+PPERM	Prime Permutations	http://www.codechef.com/problems/PPERM	2012-06-07	medium	(222,33.93)
+STABLEMP	Stable Marriage Problem	http://www.codechef.com/problems/STABLEMP	2008-12-01	medium	(225,40.11)
+MARCHA4	The Rise and Fall of Power	http://www.codechef.com/problems/MARCHA4	2009-03-18	medium	(226,5.89)
+RRECIPE	Recipe Reconstruction	http://www.codechef.com/problems/RRECIPE	2012-09-02	easy	(1040,35.95)
+NAME2	Your Name is Mine	http://www.codechef.com/problems/NAME2	2013-03-27	easy	(1041,31.86)
+SPCANDY	Splitting Candies	http://www.codechef.com/problems/SPCANDY	2013-07-03	easy	(1047,30.30)
+TAVISUAL	The Ball And Cups	http://www.codechef.com/problems/TAVISUAL	2013-01-26	easy	(1052,46.78)
+MAXDIFF	Maximum Weight Difference	http://www.codechef.com/problems/MAXDIFF	2013-02-20	easy	(1095,32.09)
+TIDRICE	Popular Rice Recipe	http://www.codechef.com/problems/TIDRICE	2011-04-21	easy	(1150,50.67)
+NOTATRI	Not a Triangle	http://www.codechef.com/problems/NOTATRI	2008-12-01	easy	(1169,23.48)
+ANUUND	Ups and Downs	http://www.codechef.com/problems/ANUUND	2014-04-13	easy	(1197,55.95)
+POINTS	The Way to a Friends House Is Never Too Long	http://www.codechef.com/problems/POINTS	2008-12-01	easy	(1210,23.73)
+RIGHTRI	Chef and The Right Triangles	http://www.codechef.com/problems/RIGHTRI	2013-08-08	easy	(1276,54.59)
+MARCHA2	Johnny and the Beanstalk	http://www.codechef.com/problems/MARCHA2	2009-03-17	easy	(1282,27.77)
+LEBOMBS	Little Elephant and Bombs	http://www.codechef.com/problems/LEBOMBS	2012-04-15	easy	(1300,35.21)
+RESQ	Arranging Cup-cakes	http://www.codechef.com/problems/RESQ	2012-05-16	easy	(1315,46.14)
+AMSGAME1	Subtraction Game 1	http://www.codechef.com/problems/AMSGAME1	2013-05-11	easy	(1337,44.99)
+BESTBATS	Top Batsmen	http://www.codechef.com/problems/BESTBATS	2012-03-25	easy	(1461,44.35)
+DRAGNXOR	Open the Dragon Scroll	http://www.codechef.com/problems/DRAGNXOR	2011-08-02	easy	(1468,57.88)
+JOHNY	Uncle Johny	http://www.codechef.com/problems/JOHNY	2013-10-03	easy	(1553,57.41)
+STONES	Jewels and Stones	http://www.codechef.com/problems/STONES	2012-02-26	easy	(1588,41.92)
+LAPIN	Lapindromes	http://www.codechef.com/problems/LAPIN	2013-05-01	easy	(1600,52.39)
+REMISS	Chef and Remissness	http://www.codechef.com/problems/REMISS	2014-01-31	easy	(1633,59.24)
+CHEFLUCK	Lucky lucky number	http://www.codechef.com/problems/CHEFLUCK	2012-03-01	easy	(1668,44.40)
+SNAPE	Snape and Ladder	http://www.codechef.com/problems/SNAPE	2013-01-24	easy	(1681,61.15)
+HOTEL	Hotel Bytelandia	http://www.codechef.com/problems/HOTEL	2011-09-07	easy	(1684,51.03)
+LEPERMUT	Little Elephant and Permutations	http://www.codechef.com/problems/LEPERMUT	2012-10-02	easy	(1706,59.87)
+NUMGAME2	Number Game Revisited	http://www.codechef.com/problems/NUMGAME2	2010-11-23	easy	(1736,53.82)
+DECSTR	Decreasing String	http://www.codechef.com/problems/DECSTR	2010-09-10	easy	(1742,32.83)
+BUYING2	Buying Sweets	http://www.codechef.com/problems/BUYING2	2012-10-04	easy	(1788,49.23)
+J7	The Best Box	http://www.codechef.com/problems/J7	2009-10-15	easy	(1907,60.20)
+GCD2	GCD2	http://www.codechef.com/problems/GCD2	2008-12-01	easy	(1921,25.90)
+VOTERS	Discrepancies in the Voters List	http://www.codechef.com/problems/VOTERS	2009-07-30	easy	(1938,27.71)
+CONFLIP	Coin Flip	http://www.codechef.com/problems/CONFLIP	2012-09-02	easy	(1942,53.98)
+CARVANS	Carvans	http://www.codechef.com/problems/CARVANS	2012-09-02	easy	(2047,45.16)
+PCYCLE	Permutation Cycles	http://www.codechef.com/problems/PCYCLE	2009-07-28	easy	(2065,41.74)
+COMM3	Three Way Communications	http://www.codechef.com/problems/COMM3	2011-02-02	easy	(2151,51.23)
+HORSES	Racing Horses	http://www.codechef.com/problems/HORSES	2012-07-02	easy	(2174,44.75)
+BUY1GET1	Buy1-Get1	http://www.codechef.com/problems/BUY1GET1	2012-09-04	easy	(2396,42.58)
+CANDLE	Birthday Candles	http://www.codechef.com/problems/CANDLE	2010-09-26	easy	(2741,23.82)
+LECANDY	Little Elephant and Candies	http://www.codechef.com/problems/LECANDY	2012-03-20	easy	(2858,55.28)
+NUKES	Nuclear Reactors	http://www.codechef.com/problems/NUKES	2009-07-15	easy	(3169,29.44)
+RECIPE	Cutting Recipes	http://www.codechef.com/problems/RECIPE	2010-11-12	easy	(3325,48.90)
+CLEANUP	Cleaning Up	http://www.codechef.com/problems/CLEANUP	2010-08-09	easy	(3340,49.55)
+EASYPROB	A Very Easy Problem!	http://www.codechef.com/problems/EASYPROB	2009-03-13	easy	(3418,53.10)
+MARCHA1	Paying up	http://www.codechef.com/problems/MARCHA1	2009-03-17	easy	(3596,35.63)
+MAXCOUNT	Count of Maximum	http://www.codechef.com/problems/MAXCOUNT	2012-01-18	easy	(3692,37.74)
+CIELRCPT	Ciel and Receipt	http://www.codechef.com/problems/CIELRCPT	2012-07-04	easy	(3860,61.00)
+CIELAB	Ciel and A-B Problem	http://www.codechef.com/problems/CIELAB	2011-11-22	easy	(4048,48.85)
+PRPALIN	Prime Palindromes	http://www.codechef.com/problems/PRPALIN	2009-07-28	easy	(4086,27.81)
+MUFFINS3	Packaging Cupcakes	http://www.codechef.com/problems/MUFFINS3	2012-11-26	easy	(4349,58.24)
+COOLING	Cooling Pies	http://www.codechef.com/problems/COOLING	2010-09-27	easy	(4895,42.48)
+NUMGAME	Yet Another Number Game	http://www.codechef.com/problems/NUMGAME	2010-04-11	easy	(5292,46.83)
+DOUBLE	Double Strings	http://www.codechef.com/problems/DOUBLE	2012-02-26	easy	(5407,60.35)
+ONP	Transform the Expression	http://www.codechef.com/problems/ONP	2008-12-01	easy	(5420,44.97)
+PERMUT2	Ambiguous Permutations	http://www.codechef.com/problems/PERMUT2	2008-12-01	easy	(5459,41.78)
+SUMTRIAN	Sums in a Triangle	http://www.codechef.com/problems/SUMTRIAN	2008-12-01	easy	(6242,35.26)
+TLG	The Lead Game	http://www.codechef.com/problems/TLG	2009-07-28	easy	(6479,23.72)
+TSORT	Turbo Sort	http://www.codechef.com/problems/TSORT	2008-12-01	easy	(8381,22.92)
+FCTRL2	Small factorials	http://www.codechef.com/problems/FCTRL2	2008-12-01	easy	(11947,22.36)
+HOLES	Holes in the text	http://www.codechef.com/problems/HOLES	2011-01-13	easy	(11949,39.68)
+FCTRL	Factorial	http://www.codechef.com/problems/FCTRL	2008-12-01	easy	(17246,34.46)
+INTEST	Enormous Input Test	http://www.codechef.com/problems/INTEST	2008-12-01	easy	(20503,36.80)
+HS08TEST	ATM	http://www.codechef.com/problems/HS08TEST	2008-12-01	easy	(29460,23.30)
+TEST	Life, the Universe, and Everything	http://www.codechef.com/problems/TEST	2009-02-23	easy	(41409,32.06)
+ABCSTR	ABC-Strings	http://www.codechef.com/problems/ABCSTR	2014-02-08	medium	(228,24.35)
+ANUMLA	Mahesh and his lost array	http://www.codechef.com/problems/ANUMLA	2014-10-14	medium	(249,24.88)
+MULTQ3	Multiples of 3	http://www.codechef.com/problems/MULTQ3	2010-04-11	medium	(264,10.10)
+WORDS1	Play on Words	http://www.codechef.com/problems/WORDS1	2008-12-01	medium	(286,10.98)
+RRFRNDS	Friends	http://www.codechef.com/problems/RRFRNDS	2014-07-15	medium	(337,22.40)
+NOKIA	Connecting Soldiers	http://www.codechef.com/problems/NOKIA	2012-06-07	medium	(343,51.18)
+POUR1	Pouring water	http://www.codechef.com/problems/POUR1	2008-12-01	medium	(443,20.20)
+MIXTURES	Mixtures	http://www.codechef.com/problems/MIXTURES	2008-12-01	medium	(735,29.39)
+FLIPCOIN	Flipping Coins	http://www.codechef.com/problems/FLIPCOIN	2010-04-11	medium	(797,13.21)
+TREEROOT	Root of the Problem	http://www.codechef.com/problems/TREEROOT	2012-11-26	medium	(837,69.59)
+ARRAYTRM	Array Transform	http://www.codechef.com/problems/ARRAYTRM	2010-04-09	medium	(867,27.38)
+PALIN	The Next Palindrome	http://www.codechef.com/problems/PALIN	2008-12-01	medium	(1415,11.74)
+TWTCLOSE	Closing the Tweets	http://www.codechef.com/problems/TWTCLOSE	2012-06-06	medium	(1655,48.07)
+MARBLES	Marbles	http://www.codechef.com/problems/MARBLES	2008-12-01	medium	(1874,25.55)
+PRIME1	Prime Generator	http://www.codechef.com/problems/PRIME1	2008-12-01	medium	(2693,13.74)
+COINS	Bytelandian gold coins	http://www.codechef.com/problems/COINS	2008-12-01	medium	(4521,14.64)
+LEBOXES	Little Elephant and Boxes	http://www.codechef.com/problems/LEBOXES	2012-04-08	hard	(9,39.02)
+GTHRONES	A Game of Thrones	http://www.codechef.com/problems/GTHRONES	2012-07-08	hard	(9,15.00)
+QTREE	Queries on tree again!	http://www.codechef.com/problems/QTREE	2012-12-26	hard	(9,23.64)
+FN	Fibonacci Number	http://www.codechef.com/problems/FN	2013-08-29	hard	(9,12.50)
+DAGCH	Graph Challenge	http://www.codechef.com/problems/DAGCH	2013-12-12	hard	(9,50.00)
+SEINC	Sereja and Subsegment Increasings	http://www.codechef.com/problems/SEINC	2014-03-11	hard	(9,11.11)
+SNCK03	Alternating Permutations	http://www.codechef.com/problems/SNCK03	2009-11-13	hard	(10,46.15)
+FUNCTION	Backup Functions	http://www.codechef.com/problems/FUNCTION	2010-06-08	hard	(10,28.95)
+QUERY	Observing the Tree	http://www.codechef.com/problems/QUERY	2012-12-26	hard	(10,11.76)
+SPMATRIX	Count Special Matrices	http://www.codechef.com/problems/SPMATRIX	2013-04-21	hard	(10,38.46)
+PARSIN	Sine Partition Function	http://www.codechef.com/problems/PARSIN	2011-09-02	hard	(11,50.00)
+EST	Equivalent Suffix Tries	http://www.codechef.com/problems/EST	2012-06-06	hard	(11,34.94)
+KNGHTMOV	Knight Moving	http://www.codechef.com/problems/KNGHTMOV	2012-07-20	hard	(11,17.24)
+MONOPLOY	Gangsters of Treeland	http://www.codechef.com/problems/MONOPLOY	2013-06-26	hard	(11,17.39)
+COT5	Count on a Treap	http://www.codechef.com/problems/COT5	2013-12-12	hard	(11,40.00)
+GNUM	Game of Numbers	http://www.codechef.com/problems/GNUM	2014-05-23	hard	(11,18.54)
+E5	Buggy algorithm	http://www.codechef.com/problems/E5	2009-06-05	hard	(12,34.29)
+H3	Congruent triangles	http://www.codechef.com/problems/H3	2009-09-15	hard	(12,20.00)
+REACHRIG	Reaching the Rig	http://www.codechef.com/problems/REACHRIG	2010-01-26	hard	(12,6.21)
+DIGITS	Product of Digits	http://www.codechef.com/problems/DIGITS	2010-09-25	hard	(12,13.07)
+HBEAR	The Hungry Bear	http://www.codechef.com/problems/HBEAR	2010-10-12	hard	(12,23.88)
+STREDUC	Reduce string	http://www.codechef.com/problems/STREDUC	2010-05-05	hard	(13,13.04)
+SKIRES	Ski Resort	http://www.codechef.com/problems/SKIRES	2010-12-02	hard	(13,18.71)
+TMP01	To Queue or not to Queue	http://www.codechef.com/problems/TMP01	2013-07-24	hard	(13,42.00)
+SEAEQ	Sereja and Equality	http://www.codechef.com/problems/SEAEQ	2014-03-16	hard	(13,21.67)
+BYTESHOP	Bytelandian Shoppers	http://www.codechef.com/problems/BYTESHOP	2010-08-19	hard	(14,35.90)
+HAUNTED	Haunted Maze	http://www.codechef.com/problems/HAUNTED	2011-06-08	hard	(14,27.27)
+BEARS	Bears and Bees	http://www.codechef.com/problems/BEARS	2012-01-17	hard	(14,40.00)
+TAPAIR	Counting The Important Pairs	http://www.codechef.com/problems/TAPAIR	2013-05-15	hard	(15,23.33)
+CNTDSETS	Counting D-sets	http://www.codechef.com/problems/CNTDSETS	2013-08-28	hard	(15,53.85)
+F4	Se7en	http://www.codechef.com/problems/F4	2009-07-10	hard	(16,3.97)
+N5	Traffic jam	http://www.codechef.com/problems/N5	2010-02-05	hard	(17,10.87)
+MSTONES	Milestones	http://www.codechef.com/problems/MSTONES	2010-12-12	hard	(17,17.80)
+QTREE6	Query on a tree VI	http://www.codechef.com/problems/QTREE6	2013-11-07	hard	(17,20.25)
+HIGH	Highways	http://www.codechef.com/problems/HIGH	2008-12-01	hard	(18,17.39)
+E3	Johny the farmer	http://www.codechef.com/problems/E3	2009-06-05	hard	(18,15.43)
+POSTERS	Tidying Posters	http://www.codechef.com/problems/POSTERS	2010-04-28	hard	(18,40.68)
+TSUBSTR	Substrings on a Tree	http://www.codechef.com/problems/TSUBSTR	2012-03-01	hard	(19,27.03)
+STREETTA	The Street	http://www.codechef.com/problems/STREETTA	2014-01-24	hard	(19,19.13)
+F6	Divide and conquer	http://www.codechef.com/problems/F6	2009-07-10	hard	(20,34.83)
+TWOCOMP	Two Companies	http://www.codechef.com/problems/TWOCOMP	2014-04-15	hard	(20,25.13)
+MUFFINS	Baking Cupcakes	http://www.codechef.com/problems/MUFFINS	2010-08-09	hard	(23,17.69)
+TSPAGAIN	Travelling Salesman Again !	http://www.codechef.com/problems/TSPAGAIN	2010-03-20	hard	(24,59.76)
+DIFTRIP	Different Trips	http://www.codechef.com/problems/DIFTRIP	2012-09-25	hard	(25,23.01)
+AUTHEN	Authentication Failed	http://www.codechef.com/problems/AUTHEN	2012-01-17	hard	(26,23.78)
+DGCD	Dynamic GCD	http://www.codechef.com/problems/DGCD	2011-12-04	hard	(27,12.53)
+DIGFORST	Digits Forest	http://www.codechef.com/problems/DIGFORST	2011-08-22	hard	(28,15.93)
+CARDSHUF	Card Shuffle	http://www.codechef.com/problems/CARDSHUF	2011-12-07	hard	(28,22.43)
+C1	Swapping mismatches	http://www.codechef.com/problems/C1	2009-04-20	hard	(29,5.37)
+TKCONVEX	Two k-Convex Polygons	http://www.codechef.com/problems/TKCONVEX	2013-04-16	hard	(32,25.87)
+FARASA	Furik and Rubik and Sub Array	http://www.codechef.com/problems/FARASA	2013-05-07	hard	(33,23.51)
+PRIMEDST	Prime Distance On Tree	http://www.codechef.com/problems/PRIMEDST	2013-06-12	hard	(33,26.81)
+LYRC	Music & Lyrics	http://www.codechef.com/problems/LYRC	2012-06-03	hard	(36,13.59)
+MARCHA3	The Guessing Game	http://www.codechef.com/problems/MARCHA3	2009-03-18	hard	(41,17.93)
+MARCHA6	Some More Homework	http://www.codechef.com/problems/MARCHA6	2009-03-18	hard	(45,25.74)
+D4	Primes in the GCD table	http://www.codechef.com/problems/D4	2009-05-05	hard	(46,10.58)
+GERALD07	Chef and Graph Queries	http://www.codechef.com/problems/GERALD07	2014-02-09	hard	(57,32.14)
+COUNTARI	Arithmetic Progressions	http://www.codechef.com/problems/COUNTARI	2012-10-25	hard	(61,23.89)
+TEAMSEL	Team Selection	http://www.codechef.com/problems/TEAMSEL	2009-05-20	hard	(149,4.87)
+ORDERS	Ordering the Soldiers	http://www.codechef.com/problems/ORDERS	2008-12-01	hard	(286,6.39)
+MX	Sorting device	http://www.codechef.com/problems/MX	2010-01-15	challenge	(8,20.25)
+CHECKERS	Eastern Draughts	http://www.codechef.com/problems/CHECKERS	2012-06-07	challenge	(8,55.56)
+BYTELE	Bytelandian Telecom	http://www.codechef.com/problems/BYTELE	2008-12-01	challenge	(9,66.67)
+TMBOX	The Turing Music Box	http://www.codechef.com/problems/TMBOX	2008-12-01	challenge	(9,70.00)
+BFORG	The Secret Fellowship of Byteland	http://www.codechef.com/problems/BFORG	2008-12-01	challenge	(9,37.84)
+MARCHAX	Place the mines!	http://www.codechef.com/problems/MARCHAX	2009-03-19	challenge	(9,54.55)
+BX	Bubbles	http://www.codechef.com/problems/BX	2009-03-22	challenge	(9,33.33)
+CX	Best board fill	http://www.codechef.com/problems/CX	2009-04-15	challenge	(9,40.74)
+KX	Park tour	http://www.codechef.com/problems/KX	0002-11-30	challenge	(9,32.56)
+NX	The Best Tower	http://www.codechef.com/problems/NX	2010-02-05	challenge	(9,16.07)
+STORO	Rotation Puzzle	http://www.codechef.com/problems/STORO	2010-04-06	challenge	(9,9.28)
+INTCOMB	Integer Combinations Of Vectors	http://www.codechef.com/problems/INTCOMB	2010-09-08	challenge	(9,71.43)
+DELIVERY	Delivering Bread	http://www.codechef.com/problems/DELIVERY	2010-10-09	challenge	(9,71.94)
+ALLINONE	The Amazing All-In-One Cooking Machine - Challenge	http://www.codechef.com/problems/ALLINONE	2011-02-07	challenge	(9,57.89)
+L2GRAPH	Graphs in Euclidean Space	http://www.codechef.com/problems/L2GRAPH	2011-03-04	challenge	(9,46.15)
+BICKER	Bickering Cooks	http://www.codechef.com/problems/BICKER	2011-03-25	challenge	(9,68.42)
+COMPLEXT	Complex Spanning Tree	http://www.codechef.com/problems/COMPLEXT	2011-08-01	challenge	(9,60.00)
+TILT	Table Tilt	http://www.codechef.com/problems/TILT	2011-08-04	challenge	(9,36.00)
+AMBIDEX	Ambidextrous Chefs	http://www.codechef.com/problems/AMBIDEX	2011-10-11	challenge	(9,36.59)
+SMVSEVIL	Smart Chef vs Evil Chef	http://www.codechef.com/problems/SMVSEVIL	2011-12-11	challenge	(9,46.67)
+SIMNIM	Simultaneous Nim	http://www.codechef.com/problems/SIMNIM	2012-01-24	challenge	(9,46.15)
+ANUMFS	The Malaysian Flight Search	http://www.codechef.com/problems/ANUMFS	2014-03-29	challenge	(9,59.09)
+CROSSES	The Game of Crosses & Crosses	http://www.codechef.com/problems/CROSSES	2008-12-01	challenge	(10,57.14)
+DX	Pack the balls in a box!	http://www.codechef.com/problems/DX	2009-05-05	challenge	(10,51.61)
+GX	Mosaic	http://www.codechef.com/problems/GX	2009-08-15	challenge	(10,68.18)
+FLOOD	Flood	http://www.codechef.com/problems/FLOOD	2010-03-19	challenge	(10,36.36)
+WORDNINJ	WordNinjas	http://www.codechef.com/problems/WORDNINJ	2012-11-07	challenge	(10,81.82)
+BURNCITY	The Burning City	http://www.codechef.com/problems/BURNCITY	2008-12-01	challenge	(11,62.07)
+CAKES	Cake Production Line	http://www.codechef.com/problems/CAKES	2010-08-07	challenge	(11,73.91)
+CAVE	Mushroom Cave	http://www.codechef.com/problems/CAVE	2011-02-26	challenge	(11,50.00)
+BYTEFOOD	Food Shortage in Byteland	http://www.codechef.com/problems/BYTEFOOD	2008-12-01	challenge	(12,53.19)
+GRAPHCH	Graph Challenge	http://www.codechef.com/problems/GRAPHCH	2010-09-01	challenge	(12,62.50)
+SPIN	Spinning Wheels	http://www.codechef.com/problems/SPIN	2011-11-10	challenge	(12,72.22)
+EX	Lights Off, Revisited!	http://www.codechef.com/problems/EX	2009-06-15	challenge	(13,29.09)
+BLOCKS	Block Tower	http://www.codechef.com/problems/BLOCKS	2010-06-09	challenge	(13,43.90)
+SEASNAKE	Sereja and Snake	http://www.codechef.com/problems/SEASNAKE	2013-08-08	challenge	(13,40.00)
+TOURBUS	Byteland Tours	http://www.codechef.com/problems/TOURBUS	2013-11-28	challenge	(13,54.05)
+SPLIT	Splitting Giant Subs	http://www.codechef.com/problems/SPLIT	2010-11-30	challenge	(14,64.86)
+ADDCHAIN	Addition chains	http://www.codechef.com/problems/ADDCHAIN	2012-06-11	challenge	(14,18.18)
+DARTS	DARTS501	http://www.codechef.com/problems/DARTS	2014-03-12	challenge	(14,67.11)
+FACTORY	Optimizing Production and Sales	http://www.codechef.com/problems/FACTORY	2010-07-08	challenge	(15,50.00)
+THREECLR	Coloring Colorable Graphs	http://www.codechef.com/problems/THREECLR	2011-01-05	challenge	(15,34.92)
+KITCHEN	Large Kitchen	http://www.codechef.com/problems/KITCHEN	2011-06-07	challenge	(17,52.94)
+SEASHUF	Sereja and Shuffling	http://www.codechef.com/problems/SEASHUF	2013-11-06	challenge	(17,71.05)
+STEPAVG	Stepping Average	http://www.codechef.com/problems/STEPAVG	2011-09-30	challenge	(19,59.68)
+TOLLS	Pricing Tollbooths	http://www.codechef.com/problems/TOLLS	2010-04-10	challenge	(20,97.11)
+TOMJERRY	Tom And Jerry	http://www.codechef.com/problems/TOMJERRY	2011-04-25	challenge	(20,69.70)
+HX	Forces in the crystal	http://www.codechef.com/problems/HX	2009-09-22	challenge	(22,43.68)
+KILOWHAT	A Fence for Byteland	http://www.codechef.com/problems/KILOWHAT	2012-11-09	challenge	(23,45.68)
+LAND	The Great Plain	http://www.codechef.com/problems/LAND	2011-08-06	challenge	(26,56.73)
+MANYLEFT	Many Left	http://www.codechef.com/problems/MANYLEFT	2012-09-30	challenge	(26,78.69)
+FX	Crystals	http://www.codechef.com/problems/FX	2009-07-10	challenge	(27,61.11)
+CLOSEST	Closest Points	http://www.codechef.com/problems/CLOSEST	2011-04-24	challenge	(28,31.52)
+SMPAINT	Art in Digital Age	http://www.codechef.com/problems/SMPAINT	2013-09-22	challenge	(28,68.42)
+FAULT	Fault Tolerance	http://www.codechef.com/problems/FAULT	2013-02-07	challenge	(29,54.42)
+EDSTGRID	Edit Distance on Grid	http://www.codechef.com/problems/EDSTGRID	2013-08-28	challenge	(29,59.76)
+LMATRIX2	Make It Zero 2	http://www.codechef.com/problems/LMATRIX2	2014-02-09	challenge	(29,68.89)
+CKROACH	Killing Gs	http://www.codechef.com/problems/CKROACH	2011-09-21	challenge	(30,93.28)
+DELNMS	Deleting numbers	http://www.codechef.com/problems/DELNMS	2013-06-09	challenge	(33,67.15)
+SEASOR	Sereja and Sorting	http://www.codechef.com/problems/SEASOR	2013-06-08	challenge	(34,68.99)
+SEASORT2	Sereja and Sorting 2	http://www.codechef.com/problems/SEASORT2	2013-09-09	challenge	(34,65.97)
+SIMGRAPH	Similar Graphs	http://www.codechef.com/problems/SIMGRAPH	2012-03-11	challenge	(35,82.26)
+EFFPAINT	Efficient Painting	http://www.codechef.com/problems/EFFPAINT	2013-01-07	challenge	(39,61.86)
+TLCS	Longest Common Subsequence	http://www.codechef.com/problems/TLCS	2008-12-01	challenge	(40,13.14)
+MAXRECT	Maximum Sub-rectangle in Matrix	http://www.codechef.com/problems/MAXRECT	2012-07-08	challenge	(45,35.89)
+CHEFPNT	Chef and Painting	http://www.codechef.com/problems/CHEFPNT	2014-04-01	challenge	(45,44.38)
+MINESWPR	Minesweeper	http://www.codechef.com/problems/MINESWPR	2013-02-13	challenge	(56,50.15)
+JX	Help the DJ	http://www.codechef.com/problems/JX	2009-10-15	challenge	(57,45.23)
+SEAPERM	Sereja and Permutation	http://www.codechef.com/problems/SEAPERM	2013-11-09	challenge	(59,74.30)
+CHALENGE	Password Cracking Challenge	http://www.codechef.com/problems/CHALENGE	2013-02-11	challenge	(70,69.03)
+CHAORNOT	To challenge or not	http://www.codechef.com/problems/CHAORNOT	2013-04-25	challenge	(73,53.66)
+GERALD09	Chef and Rectangle Genome	http://www.codechef.com/problems/GERALD09	2014-04-05	challenge	(82,81.99)
+FACTORIZ	Factorisation	http://www.codechef.com/problems/FACTORIZ	2013-09-07	challenge	(100,46.89)
+NSUDOKU	Sudoku Solver	http://www.codechef.com/problems/NSUDOKU	2009-08-11	challenge	(113,25.00)
+SEAVEC	Sereja and Vectors	http://www.codechef.com/problems/SEAVEC	2013-09-15	challenge	(120,73.33)
+B1	Spaghetti Monsters	http://www.codechef.com/problems/B1	2009-03-15	medium	(9,11.25)
+\.
+
+
+--
+-- Data for Name: problems_tags; Type: TABLE DATA; Schema: public; Owner: db120050032
+--
+
+COPY problems_tags (code, tagid) FROM stdin;
+LELUCKYN	0
+LELUCKYN	1
+LELUCKYN	2
+LELUCKYN	3
+LELUCKYN	4
+CIELNUM3	5
+CIELNUM3	6
+CIELNUM3	7
+GRIDGAME	8
+GRIDGAME	9
+GRIDGAME	3
+GRIDGAME	10
+FBCHEF	11
+FBCHEF	12
+FBCHEF	13
+FBCHEF	3
+FBCHEF	14
+DFSGRID	15
+DFSGRID	16
+DFSGRID	17
+DFSGRID	3
+DFSGRID	18
+GERALD06	19
+GERALD06	20
+GERALD06	7
+COTA	21
+COTA	22
+COTA	23
+COTA	24
+COTA	25
+COTA	26
+DIREL	15
+DIREL	27
+DIREL	28
+DIREL	23
+DIREL	29
+TREERGB	30
+TREERGB	31
+TREERGB	32
+TREERGB	33
+TREERGB	4
+CUTSQRS	34
+B3	34
+AX	34
+D3	34
+F5	34
+E2	34
+F3	34
+H5	34
+SUMSLOPE	35
+SUMSLOPE	7
+SUMSLOPE	36
+SWARM	37
+SWARM	7
+SWARM	38
+HAPPY	39
+HAPPY	7
+HAPPY	38
+GRIDCHEF	40
+GLASS	40
+GLASS	41
+GLASS	7
+CANDY	42
+CANDY	7
+CANDY	10
+BALANCED	43
+BALANCED	7
+BALANCED	44
+SOCIAL	45
+SOCIAL	7
+SOCIAL	10
+SEEDS	46
+SEEDS	43
+SEEDS	7
+TERM	41
+TERM	7
+TERM	47
+COLLTIME	48
+COLLTIME	49
+COLLTIME	7
+ENERGY	50
+ENERGY	43
+ENERGY	7
+CROWNS	50
+CROWNS	43
+CROWNS	7
+RESTOCK	51
+RESTOCK	7
+RESTOCK	52
+YALOP	53
+YALOP	7
+YALOP	38
+BLOCKDRO	54
+BLOCKDRO	7
+BLOCKDRO	38
+BAKE	7
+BAKE	55
+BAKE	56
+POSTAL	7
+POSTAL	55
+POSTAL	57
+NONPALIN	48
+NONPALIN	58
+NONPALIN	7
+GRAPLANE	59
+GRAPLANE	60
+GRAPLANE	7
+BUYING	59
+BUYING	60
+BUYING	7
+GAPFILL	61
+GAPFILL	7
+GAPFILL	62
+LUCKY4	63
+LUCKY4	7
+LUCKY4	4
+FLOORSMV	64
+FLOORSMV	65
+FLOORSMV	7
+LUCKFILL	66
+LUCKFILL	7
+LUCKFILL	4
+CIELGAME	67
+CIELGAME	6
+CIELGAME	7
+LUCKYCOM	66
+LUCKYCOM	7
+LUCKYCOM	4
+CIELLAND	67
+CIELLAND	6
+CIELLAND	7
+BMASTER	68
+BMASTER	7
+BMASTER	69
+ARIGEOM	70
+ARIGEOM	71
+ARIGEOM	7
+ARIGEOM	72
+DECORATE	73
+DECORATE	74
+DECORATE	24
+DECORATE	75
+DECORATE	76
+TABISHOP	15
+TABISHOP	77
+TABISHOP	78
+TABISHOP	3
+TABISHOP	79
+TABISHOP	80
+AMROOK	81
+AMROOK	82
+AMROOK	7
+AMROOK	83
+GRIDCOL	81
+GRIDCOL	16
+GRIDCOL	24
+GRIDCOL	84
+GRIDCOL	18
+ANUBTT	85
+ANUBTT	86
+ANUBTT	24
+ANUBTT	87
+MENU	34
+MMATCH	34
+D2	34
+F2	34
+G1	34
+G2	34
+N3	34
+ECODE	88
+ECODE	37
+ECODE	7
+TWOCHEFS	89
+TWOCHEFS	42
+TWOCHEFS	7
+TWOCHEFS	10
+TWOCHEFS	90
+ODDBIN	91
+ODDBIN	7
+ODDBIN	92
+RESTEXP	93
+RESTEXP	94
+RESTEXP	7
+SQUAGAME	95
+SQUAGAME	7
+SQUAGAME	38
+NETWORK	53
+NETWORK	7
+NETWORK	10
+TARPRACT	96
+TARPRACT	7
+TARPRACT	10
+PERMDIG	48
+PERMDIG	58
+PERMDIG	7
+ZENCALC	15
+ZENCALC	97
+ZENCALC	98
+ZENCALC	7
+ZENCALC	99
+SUBTREE	100
+SUBTREE	98
+SUBTREE	7
+SUBTREE	101
+SUBTREE	80
+GERALD3	20
+ORDERAAM	102
+ORDERAAM	103
+ORDERAAM	24
+ORDERAAM	87
+ORDERAAM	83
+FUNAGP	13
+FUNAGP	104
+FUNAGP	24
+FUNAGP	105
+FUNAGP	14
+SEABUB	31
+SEABUB	106
+SEABUB	7
+SEABUB	107
+SEABUB	108
+CNTDIGIT	30
+CNTDIGIT	31
+CNTDIGIT	3
+CNTDIGIT	4
+PHRASES	34
+ARCHPLG	34
+POST	24
+POST	109
+POST	10
+ACMKANPA	34
+QSTRING	110
+ACMKANPE	34
+REALSET	111
+REALSET	74
+REALSET	112
+REALSET	24
+REALSET	2
+BTREE	113
+A8	34
+J4	34
+N2	34
+LIGHTING	34
+LIGHTING	114
+LIGHTING	24
+DOMNOCUT	48
+DOMNOCUT	24
+DOMNOCUT	57
+HYPER	115
+HYPER	60
+HYPER	24
+CIELWEB	67
+CIELWEB	24
+CIELWEB	6
+CONNECT	63
+CONNECT	24
+CONNECT	116
+CIELBALL	0
+CIELBALL	5
+CIELBALL	31
+CIELBALL	24
+CIELBALL	6
+LEPAPER	1
+LEPAPER	31
+LEPAPER	24
+LEPAPER	117
+LEPAPER	4
+MAXCIR	118
+MAXCIR	24
+MAXCIR	69
+LONGART	119
+LONGART	23
+LONGART	24
+LONGART	120
+LONGART	98
+LONGART	121
+CIELKARA	122
+CIELKARA	6
+CIELKARA	123
+CIELKARA	3
+LOGO	27
+LOGO	124
+LOGO	17
+LOGO	3
+LOGO	29
+DEG3MAXT	31
+DEG3MAXT	24
+DEG3MAXT	125
+DEG3MAXT	126
+LMATRIX3	127
+LMATRIX3	12
+FIBTREE	128
+FIBTREE	24
+FIBTREE	129
+FIBTREE	123
+FIBTREE	130
+FIBTREE	14
+FIBTREE	107
+PUSHFLOW	131
+PUSHFLOW	132
+PUSHFLOW	24
+PUSHFLOW	129
+PUSHFLOW	133
+PUSHFLOW	33
+A5	34
+A7	34
+M4	34
+G5	34
+SNCK02	34
+M1	34
+M5	34
+CLUE	24
+CLUE	109
+CLUE	10
+STEPNUMS	134
+STEPNUMS	37
+STEPNUMS	24
+SERVERS	43
+SERVERS	24
+SERVERS	135
+ESCAPE	43
+ACMKANPC	34
+RUSHHOUR	41
+RUSHHOUR	136
+RUSHHOUR	24
+WINDOW	48
+WINDOW	24
+WINDOW	94
+GENIND	137
+GENIND	43
+GENIND	24
+HARMONY	43
+HARMONY	24
+HARMONY	138
+CLONES	24
+CLONES	51
+CLONES	38
+MINESREV	24
+MINESREV	51
+MINESREV	52
+CKSCHOOL	139
+CKSCHOOL	65
+CKSCHOOL	24
+DIVISORS	48
+DIVISORS	54
+DIVISORS	24
+SHORTCIR	54
+SHORTCIR	24
+SHORTCIR	38
+MISINT2	48
+MISINT2	24
+MISINT2	61
+YASEQ	96
+YASEQ	24
+YASEQ	10
+EVILBOOK	24
+EVILBOOK	6
+EVILBOOK	140
+LAMQUGAM	48
+LAMQUGAM	58
+LAMQUGAM	24
+FLYDIST	141
+FLYDIST	24
+FLYDIST	52
+CIELQUAK	24
+CIELQUAK	6
+CIELQUAK	140
+MAGIC	142
+MAGIC	9
+MAGIC	60
+MAGIC	23
+MAGIC	24
+LECOINS	143
+LECOINS	24
+LECOINS	98
+LECOINS	26
+LECOINS	72
+LECOINS	4
+COOLNUM	24
+COOLNUM	120
+COOLNUM	144
+COOLNUM	145
+QPOLYSUM	48
+QPOLYSUM	71
+QPOLYSUM	24
+QPOLYSUM	123
+NPIN	124
+NPIN	24
+NPIN	146
+NPIN	147
+NPIN	78
+NPIN	29
+AVDWAST	122
+AVDWAST	103
+AVDWAST	6
+AVDWAST	3
+CAKE2AM	119
+CAKE2AM	102
+CAKE2AM	124
+CAKE2AM	148
+CAKE2AM	149
+CAKE2AM	3
+CAKE2AM	83
+SEAARC	81
+SEAARC	24
+SEAARC	150
+SEAARC	108
+D7	34
+G4	34
+J6	34
+DIGITS2	151
+DIGITS2	24
+DIGITS2	10
+PRDIVSUM	48
+PRDIVSUM	24
+PRDIVSUM	138
+CHEF_GAM	152
+CHEF_GAM	136
+CHEF_GAM	24
+CNTHEX	24
+CNTHEX	18
+CNTHEX	153
+SHORT2	115
+SHORT2	60
+SHORT2	24
+LUCKYDAY	24
+LUCKYDAY	6
+LUCKYDAY	57
+CIELWALK	154
+CIELWALK	24
+CIELWALK	6
+FINDSEQ	141
+FINDSEQ	24
+FINDSEQ	18
+CIELHACK	31
+CIELHACK	24
+CIELHACK	6
+CIELHACK	69
+MARTARTS	119
+MARTARTS	24
+MARTARTS	155
+MARTARTS	156
+MARTARTS	52
+REARRAN	157
+REARRAN	158
+REARRAN	60
+REARRAN	159
+REARRAN	72
+CHANGE	160
+CHANGE	24
+CHANGE	98
+CHANGE	2
+CHANGE	10
+CPP	161
+CPP	24
+CPP	162
+CPP	163
+CPP	164
+CPP	29
+MINWDSUM	48
+MINWDSUM	165
+MINWDSUM	166
+MINWDSUM	7
+STRQUERY	167
+STRQUERY	24
+STRQUERY	168
+STRQUERY	169
+STRQUERY	113
+INVBINCF	48
+INVBINCF	167
+INVBINCF	170
+INVBINCF	24
+INVBINCF	99
+TWOROADS	171
+TWOROADS	124
+TWOROADS	24
+TWOROADS	172
+TWOROADS	80
+SIGFIB	131
+SIGFIB	104
+SIGFIB	24
+SIGFIB	173
+J5	34
+REVERSED	34
+REVERSED	114
+REVERSED	24
+GRAPHCT	24
+GRAPHCT	174
+GRAPHCT	36
+DORADM01	134
+DORADM01	24
+DORADM01	35
+GST	43
+GST	24
+GST	35
+OVENTIME	43
+OVENTIME	24
+OVENTIME	44
+EVENPOLY	91
+EVENPOLY	43
+EVENPOLY	24
+BUYLAND	24
+BUYLAND	95
+BUYLAND	52
+DIVNODIV	48
+DIVNODIV	49
+DIVNODIV	24
+EXPCOMM	48
+EXPCOMM	175
+EXPCOMM	24
+BB	60
+BB	24
+BB	53
+HPARITY	54
+HPARITY	24
+HPARITY	83
+DPOWPERM	48
+DPOWPERM	176
+DPOWPERM	24
+SHORT	60
+SHORT	24
+SHORT	153
+TICKETS	24
+TICKETS	177
+TICKETS	10
+HULL	144
+HULL	7
+HULL	178
+HULL	116
+HULL	179
+CUCUMBER	180
+CUCUMBER	24
+CUCUMBER	181
+CUCUMBER	6
+TASUFFIX	182
+TASUFFIX	183
+TASUFFIX	24
+TASUFFIX	184
+TASUFFIX	80
+GERALD2	185
+GERALD2	20
+GERALD2	24
+GERALD2	129
+GERALD2	186
+ANUDTQ	85
+ANUDTQ	185
+ANUDTQ	24
+ANUDTQ	105
+ANUDTQ	101
+ARRANGE2	24
+ARRANGE2	39
+ARRANGE2	36
+CYDB	141
+CYDB	24
+CYDB	52
+MATCH	24
+MATCH	144
+MATCH	155
+MATCH	187
+MATCH	116
+PARADE	0
+PARADE	118
+PARADE	188
+PARADE	87
+PARADE	189
+TESTERS	68
+TESTERS	190
+TESTERS	24
+TESTERS	101
+QPOINT	185
+QPOINT	124
+QPOINT	24
+QPOINT	191
+QPOINT	186
+QPOINT	80
+GERALD08	12
+GERALD08	20
+GERALD08	192
+GERALD08	3
+TRIPS	100
+TRIPS	3
+TRIPS	193
+TRIPS	76
+GENETICS	37
+GENETICS	24
+GENETICS	38
+MUFFINS2	151
+MUFFINS2	24
+MUFFINS2	10
+SINSUMQ	48
+SINSUMQ	176
+SINSUMQ	24
+QRECT	194
+QRECT	24
+QRECT	107
+QRECT	195
+QRECT	110
+ANUSFR	85
+ANUSFR	196
+ANUSFR	103
+ANUSFR	24
+ANUSFR	14
+ANUSFR	197
+M2	34
+LCM	134
+LCM	24
+LCM	39
+PRUNING	43
+PRUNING	24
+PRUNING	138
+N1	34
+N4	34
+TR1	198
+TR1	28
+TR1	35
+CIRCUITS	28
+CIRCUITS	43
+CIRCUITS	44
+FIRE	28
+FIRE	43
+FIRE	135
+BOGOSORT	28
+BOGOSORT	41
+BOGOSORT	38
+STEPUP	40
+BYTEISLE	91
+BYTEISLE	28
+BYTEISLE	93
+COUNTREL	28
+COUNTREL	94
+COUNTREL	199
+WINDOW2	48
+WINDOW2	49
+WINDOW2	28
+CPOINT	88
+CPOINT	137
+CPOINT	28
+BWALL	28
+BWALL	138
+BWALL	199
+RG_01	28
+RG_01	51
+RG_01	200
+RG_01	201
+AEHASH	28
+AEHASH	93
+AEHASH	53
+SUPERPLN	48
+SUPERPLN	176
+SUPERPLN	28
+RHOUSE	28
+RHOUSE	61
+RHOUSE	76
+KSUBSUM	64
+KSUBSUM	28
+KSUBSUM	65
+DDISH	68
+DDISH	157
+DDISH	156
+DDISH	202
+DDISH	72
+TABUS	0
+TABUS	77
+TABUS	143
+TABUS	32
+TABUS	23
+TABUS	80
+SEAGRP	203
+SEAGRP	155
+SEAGRP	7
+SEAGRP	108
+CUBE	74
+CUBE	28
+CUBE	204
+NUMPATH	205
+NUMPATH	143
+NUMPATH	194
+NUMPATH	7
+NUMPATH	206
+TRSUBTR	205
+TRSUBTR	75
+TRSUBTR	207
+TRSUBTR	7
+TRSUBTR	206
+GERALD05	81
+GERALD05	19
+GERALD05	31
+GERALD05	20
+GERALD05	7
+A6	34
+C4	34
+F1	34
+K1	34
+TRIP	114
+TRIP	28
+TRIP	36
+NICEQUAD	28
+NICEQUAD	35
+NICEQUAD	38
+PRIMPATT	28
+PRIMPATT	174
+PRIMPATT	38
+MAXCROSS	88
+MAXCROSS	28
+MAXCROSS	39
+COURSE	37
+COURSE	28
+COURSE	10
+OMAX	88
+OMAX	28
+OMAX	95
+TRAVELER	48
+TRAVELER	58
+TRAVELER	28
+LUCKY2	28
+LUCKY2	140
+LUCKY2	4
+LEMAGIC	1
+LEMAGIC	31
+LEMAGIC	143
+LEMAGIC	28
+LEMAGIC	4
+DOWNLOAD	13
+DOWNLOAD	208
+DOWNLOAD	65
+DOWNLOAD	7
+DOWNLOAD	209
+CIELMAP	5
+CIELMAP	28
+CIELMAP	124
+CIELMAP	6
+RRGAME	68
+RRGAME	210
+RRGAME	7
+A3	34
+A3	211
+A3	9
+A3	212
+A3	213
+H1	34
+FLUSHOT	28
+FLUSHOT	43
+FLUSHOT	94
+SNAKY	48
+SNAKY	175
+SNAKY	28
+GROWGOLD	208
+GROWGOLD	28
+GROWGOLD	65
+CIRKILL	28
+CIRKILL	124
+CIRKILL	146
+CIRKILL	97
+CIRKILL	2
+NDUNGEON	34
+ASTRGAME	91
+ASTRGAME	28
+ASTRGAME	93
+RECTCNT	88
+RECTCNT	137
+RECTCNT	28
+PACKBAND	139
+PACKBAND	28
+PACKBAND	65
+MOVES	88
+MOVES	115
+MOVES	28
+IGAME	54
+IGAME	28
+IGAME	199
+LUCKPAL	70
+LUCKPAL	28
+LUCKPAL	56
+HAREJUMP	214
+HAREJUMP	28
+HAREJUMP	57
+DEFACING	122
+DEFACING	28
+DEFACING	103
+DEFACING	6
+CTEAMS	28
+CTEAMS	51
+CTEAMS	52
+BIGPIZA	139
+BIGPIZA	28
+BIGPIZA	65
+LUKYDRIV	142
+LUKYDRIV	31
+LUKYDRIV	97
+LUKYDRIV	215
+LOKBIL	216
+LOKBIL	28
+LOKBIL	53
+LUCKYBAL	66
+LUCKYBAL	28
+LUCKYBAL	4
+DIAMOND	31
+DIAMOND	28
+DIAMOND	97
+DIAMOND	69
+BWKNIGHT	217
+BWKNIGHT	28
+BWKNIGHT	36
+ATOMS	50
+ATOMS	28
+ATOMS	43
+LWS	28
+LWS	140
+LWS	218
+A4	34
+SEATRSF	81
+SEATRSF	28
+SEATRSF	84
+SEATRSF	126
+SEATRSF	108
+TOURNAM	158
+TOURNAM	143
+TOURNAM	60
+TOURNAM	187
+CHEFBRO	28
+CHEFBRO	153
+CHEFBRO	218
+TASTR	77
+TASTR	32
+TASTR	219
+TASTR	220
+TASTR	168
+TASTR	80
+ARRGAME2	221
+ARRGAME2	28
+ARRGAME2	126
+ARRGAME2	187
+ARRGAME2	209
+LOWSUM	0
+LOWSUM	205
+LOWSUM	28
+LOWSUM	222
+LOWSUM	209
+LOWSUM	206
+WEIGHT	40
+LUCKY10	28
+LUCKY10	103
+LUCKY10	69
+LUCKY10	4
+BINTOUR	81
+BINTOUR	28
+BINTOUR	133
+BINTOUR	223
+DISHDIS	28
+DISHDIS	56
+DISHDIS	218
+LEBALONS	143
+LEBALONS	32
+LEBALONS	105
+LEBALONS	4
+NI01	224
+LEMOUSE	143
+LEMOUSE	225
+LEMOUSE	202
+LEMOUSE	4
+CAKEDOOM	103
+CAKEDOOM	144
+CAKEDOOM	97
+CAKEDOOM	202
+FLOORI4	226
+FLOORI4	104
+FLOORI4	28
+FLOORI4	123
+FLOORI4	107
+GENARSEQ	48
+GENARSEQ	58
+GENARSEQ	28
+TRMAG	214
+TRMAG	28
+TRMAG	153
+INSOMA2	34
+DREAM	227
+DREAM	228
+DREAM	202
+DREAM	209
+MIKE3	28
+MIKE3	133
+MIKE3	223
+MIKE3	229
+UASEQ	226
+UASEQ	28
+UASEQ	230
+UASEQ	107
+EQUALIZ	158
+EQUALIZ	60
+EQUALIZ	72
+CHODE	231
+CHODE	74
+CHODE	232
+CHODE	233
+TANGDIV	15
+TANGDIV	12
+TANGDIV	32
+TANGDIV	234
+DRGHTS	28
+DRGHTS	235
+DRGHTS	108
+LUCKY1	28
+LUCKY1	141
+LUCKY1	4
+SPOONS	81
+SPOONS	32
+SPOONS	172
+SPOONS	204
+GAMEAAM	102
+GAMEAAM	28
+GAMEAAM	236
+GAMEAAM	83
+GAMEAAM	237
+LEEXAMS	238
+LEEXAMS	28
+LEEXAMS	187
+LEEXAMS	172
+LEEXAMS	4
+WSTRING	143
+WSTRING	28
+WSTRING	239
+WSTRING	225
+LIFE	45
+LIFE	28
+LIFE	10
+CIELNUM1	67
+CIELNUM1	28
+CIELNUM1	6
+CHEFSQUA	240
+CHEFSQUA	28
+CHEFSQUA	124
+CHEFSQUA	193
+MAXPR	81
+MAXPR	31
+MAXPR	28
+MAXPR	150
+MAXPR	108
+FTRIP	162
+FTRIP	187
+FTRIP	202
+FTRIP	72
+FTRIP	218
+CAOS2	97
+CAOS2	172
+CAOS2	202
+SHUTTLE	28
+SHUTTLE	140
+SHUTTLE	62
+LEBAMBOO	15
+LEBAMBOO	126
+LEBAMBOO	241
+LEBAMBOO	4
+CHEFBM	240
+CHEFBM	28
+CHEFBM	17
+CHEFBM	105
+PPXOR	242
+PPXOR	243
+PPXOR	32
+PPXOR	4
+PPXOR	244
+RDF	68
+RDF	143
+RDF	28
+RDF	106
+RDF	98
+PRETNUM	221
+PRETNUM	28
+PRETNUM	186
+PRETNUM	145
+PRETNUM	245
+COLARR	240
+CNPIIM	12
+CNPIIM	32
+CNPIIM	246
+CNPIIM	2
+DUMPLING	63
+DUMPLING	28
+DUMPLING	247
+FATCHEF	247
+MVCOIN	59
+MVCOIN	28
+MVCOIN	60
+REIGN	74
+REIGN	28
+REIGN	133
+RACELANE	43
+YNOUTPUT	15
+YNOUTPUT	248
+YNOUTPUT	136
+LECARDS	190
+LECARDS	202
+LECARDS	72
+LECARDS	4
+CHEFTOWN	68
+CHEFTOWN	185
+CHEFTOWN	249
+CHEFTOWN	189
+PANSTACK	63
+PANSTACK	28
+PANSTACK	97
+TREEGAME	30
+TREEGAME	28
+TREEGAME	250
+TREEGAME	103
+TREEGAME	251
+TREEGAME	4
+SNCK04	34
+GALACTIK	252
+GALACTIK	28
+GALACTIK	239
+GALACTIK	146
+GALACTIK	253
+GALACTIK	254
+CROWD	2
+CROWD	117
+CROWD	189
+CROWD	218
+CHEFHACK	255
+CHEFHACK	28
+CHEFHACK	181
+CHEFHACK	256
+CHEFHACK	245
+RAINBOWB	240
+RAINBOWB	257
+RAINBOWB	123
+RAINBOWB	107
+RAINBOWB	202
+D6	34
+K2	34
+RRATING	28
+RRATING	258
+RRATING	227
+RRATING	218
+NEWSCH	117
+NEWSCH	69
+NEWSCH	202
+NEWSCH	233
+MKSQR	40
+NEXTNUM	157
+NEXTNUM	231
+NEXTNUM	205
+NEXTNUM	259
+NEXTNUM	170
+NEXTNUM	206
+NDLVOTE	260
+NDLVOTE	28
+NDLVOTE	65
+LEALCO	261
+LEALCO	21
+LEALCO	28
+LEALCO	181
+LEALCO	4
+LEMUSIC	167
+LEMUSIC	28
+LEMUSIC	103
+LEMUSIC	209
+LEMUSIC	4
+COUNTPAL	88
+COUNTPAL	28
+COUNTPAL	109
+RECTQUER	68
+RECTQUER	74
+RECTQUER	28
+RECTQUER	262
+COLLIDE	64
+COLLIDE	28
+COLLIDE	65
+PRLADDU	263
+GRAYSC	227
+GRAYSC	7
+GRAYSC	264
+GRAYSC	229
+GRAYSC	116
+WITMATH	68
+WITMATH	162
+WITMATH	265
+WITMATH	266
+WITMATH	202
+NI02	224
+FORGETPW	15
+FORGETPW	150
+FORGETPW	202
+FORGETPW	267
+CUBESUM	34
+SHIRO	268
+SHIRO	31
+SHIRO	143
+SHIRO	28
+SHIRO	72
+SHIRO	218
+REVERSE	131
+REVERSE	240
+REVERSE	28
+REVERSE	23
+REVERSE	26
+FCBARCA	167
+FCBARCA	31
+FCBARCA	246
+FCBARCA	202
+FCBARCA	72
+PRPOTION	263
+CHMOD	268
+CHMOD	28
+CHMOD	269
+CHMOD	230
+CHMOD	72
+DIVQUERY	16
+DIVQUERY	7
+DIVQUERY	270
+DIVQUERY	18
+CLETAB	131
+CLETAB	103
+CLETAB	202
+CLETAB	29
+DELISH	143
+DELISH	225
+DELISH	202
+DELISH	204
+LPAIR	13
+LPAIR	22
+LPAIR	32
+LPAIR	25
+TOURMAP	23
+TOURMAP	271
+TOURMAP	97
+TOURMAP	156
+TOURMAP	202
+MTRICK	32
+MTRICK	203
+MTRICK	232
+MTRICK	72
+MTRICK	62
+GERALD03	19
+GERALD03	28
+GERALD03	20
+GERALD03	103
+SGARDEN	240
+SGARDEN	28
+SGARDEN	272
+SGARDEN	273
+ROTATION	226
+ROTATION	231
+ROTATION	104
+ROTATION	107
+A2	34
+COOLGUYS	68
+COOLGUYS	28
+COOLGUYS	215
+COOLGUYS	172
+CIELTOMY	261
+CIELTOMY	5
+CIELTOMY	6
+CIELTOMY	202
+BEX	71
+BEX	28
+BEX	274
+BEX	29
+AMSGAME2	82
+AMSGAME2	143
+AMSGAME2	83
+AMSGAME2	202
+PAIRSUM	34
+TWODOGS	11
+TWODOGS	28
+TWODOGS	235
+MAXCOMP	256
+MAXCOMP	69
+MAXCOMP	202
+KINGCON	167
+KINGCON	255
+KINGCON	28
+KINGCON	23
+KINGCON	239
+HDELIVER	28
+HDELIVER	140
+HDELIVER	62
+PREDICT	28
+PREDICT	225
+PREDICT	275
+PREDICT	187
+ADIGIT	226
+ADIGIT	12
+ADIGIT	240
+ADIGIT	28
+TPRODUCT	88
+TPRODUCT	28
+TPRODUCT	138
+DIGROT	96
+DIGROT	28
+DIGROT	10
+TWSTR	28
+TWSTR	97
+TWSTR	177
+CRAWA	15
+CRAWA	131
+CRAWA	28
+CRAWA	233
+FGFS	28
+FGFS	103
+FGFS	203
+FGFS	209
+FGFS	204
+SUBMIN	276
+CIEL8STR	154
+CIEL8STR	28
+CIEL8STR	6
+SPREAD	88
+SPREAD	137
+SPREAD	13
+SPREAD	28
+CSUMD	28
+CSUMD	227
+CSUMD	97
+CSUMD	117
+CSUMD	277
+LEVY	167
+LEVY	97
+LEVY	245
+LEVY	202
+ACMKANPD	34
+CHEFGR	240
+ALETHIO	15
+ALETHIO	278
+ALETHIO	28
+ALETHIO	279
+CAOS1	231
+CAOS1	97
+CAOS1	172
+INTEG	230
+INTEG	172
+INTEG	202
+DRANGE	226
+DRANGE	142
+DRANGE	280
+DRANGE	218
+SPOTWO	28
+SPOTWO	246
+SPOTWO	186
+CHEFLR	226
+CHEFLR	281
+CHEFLR	240
+CHEFLR	107
+CHEFLR	202
+TMSLT	223
+TMSLT	25
+TMSLT	202
+TMSLT	209
+CLMBSTRS	81
+CLMBSTRS	190
+CLMBSTRS	246
+CLMBSTRS	202
+TAAPLUSB	183
+TAAPLUSB	28
+TAAPLUSB	2
+TAAPLUSB	187
+TAAPLUSB	282
+TAAPLUSB	80
+D1	34
+GUESS	15
+GUESS	81
+GUESS	276
+GUESS	150
+GUESS	202
+DIGJUMP	240
+DIGJUMP	165
+DIGJUMP	283
+DIGJUMP	28
+DIGJUMP	150
+CVOTE	181
+CVOTE	97
+CVOTE	284
+CVOTE	202
+CVOTE	209
+DISHOWN	252
+DISHOWN	28
+DISHOWN	272
+DISHOWN	204
+CHRECT	15
+CHRECT	231
+CHRECT	230
+CHRECT	146
+RETPO	272
+RETPO	2
+RETPO	202
+RETPO	233
+FROGV	240
+FROGV	31
+FROGV	272
+FROGV	202
+PERMSUFF	30
+PERMSUFF	285
+PERMSUFF	202
+PERMSUFF	209
+PERMSUFF	4
+MARBLEGF	74
+MARBLEGF	28
+MARBLEGF	246
+WCOUNT	28
+WCOUNT	141
+WCOUNT	62
+MISINTER	152
+MISINTER	28
+MISINTER	136
+EQIDLIS	139
+EQIDLIS	28
+EQIDLIS	65
+LELEMON	15
+LELEMON	268
+LELEMON	202
+LELEMON	209
+LELEMON	4
+MSTICK	162
+MSTICK	275
+MSTICK	14
+MSTICK	202
+MSTICK	72
+CAKE1AM	231
+CAKE1AM	102
+CAKE1AM	124
+CAKE1AM	83
+PPNUM	15
+PPNUM	243
+PPNUM	28
+PPNUM	4
+DBOY	71
+DBOY	31
+DBOY	256
+DBOY	202
+MAANDI	286
+MAANDI	215
+MAANDI	126
+MAANDI	108
+MAANDI	202
+CHEFTEAM	48
+CHEFTEAM	49
+CHEFTEAM	28
+DRGNBOOL	231
+DRGNBOOL	97
+DRGNBOOL	69
+GARDENSQ	152
+GARDENSQ	28
+GARDENSQ	136
+KPRIME	146
+KPRIME	287
+KPRIME	245
+KPRIME	202
+KPRIME	218
+MGCRNK	71
+MGCRNK	288
+MGCRNK	246
+MGCRNK	202
+PRIMES2	151
+PRIMES2	28
+PRIMES2	10
+CKISSHUG	269
+CKISSHUG	97
+CKISSHUG	2
+CKISSHUG	117
+CKISSHUG	189
+TAPALIN	77
+TAPALIN	117
+TAPALIN	99
+TAPALIN	202
+TAPALIN	72
+TAPALIN	80
+SDSQUARE	289
+SDSQUARE	186
+SDSQUARE	202
+PNTNG	290
+PNTNG	28
+PNTNG	103
+PNTNG	133
+PNTNG	209
+MCHAIRS	81
+MCHAIRS	246
+MCHAIRS	186
+MCHAIRS	202
+CIELNUM2	67
+CIELNUM2	28
+CIELNUM2	6
+HOMDEL	142
+HOMDEL	26
+HOMDEL	218
+PROB	221
+PROB	146
+PROB	187
+PROB	202
+PROB	72
+CHEFZOT	15
+CHEFZOT	240
+CHEFZOT	231
+CHEFZOT	150
+BINTREE	12
+BINTREE	276
+BINTREE	28
+BINTREE	101
+COMPILER	15
+COMPILER	28
+COMPILER	246
+COMPILER	105
+PPTEST	243
+PPTEST	31
+PPTEST	28
+PPTEST	4
+MONTRANS	48
+MONTRANS	175
+MONTRANS	28
+AMIFIB	0
+AMIFIB	205
+AMIFIB	28
+AMIFIB	291
+AMIFIB	75
+AMIFIB	292
+AMIFIB	206
+LCPESY	231
+LCPESY	235
+LCPESY	25
+ANUARM	85
+ANUARM	196
+ANUARM	202
+PROSUM	231
+PROSUM	223
+PROSUM	72
+PROSUM	204
+RRMATRIX	68
+RRMATRIX	293
+RRMATRIX	210
+RRMATRIX	202
+HELLO	268
+HELLO	202
+HELLO	72
+HELLO	29
+HELPLIRA	231
+HELPLIRA	124
+HELPLIRA	246
+HELPLIRA	126
+SUBANAGR	59
+SUBANAGR	28
+SUBANAGR	60
+FLAGS	81
+FLAGS	290
+FLAGS	28
+FLAGS	133
+KINGSHIP	15
+KINGSHIP	22
+KINGSHIP	23
+KINGSHIP	25
+KINGSHIP	202
+CSUB	15
+CSUB	231
+CSUB	276
+CSUB	272
+GRANAMA	231
+GRANAMA	71
+GRANAMA	72
+GRANAMA	218
+GRID	294
+GRID	276
+GRID	31
+GRID	202
+E1	34
+FIRESC	255
+FIRESC	98
+FIRESC	202
+FIRESC	254
+FIRESC	218
+A1	34
+AMMEAT2	15
+AMMEAT2	295
+AMMEAT2	202
+AMMEAT2	4
+POKER	34
+THREEDIF	48
+THREEDIF	81
+THREEDIF	181
+THREEDIF	99
+THREEDIF	202
+RRSTONE	68
+RRSTONE	15
+RRSTONE	28
+RRSTONE	105
+GERALD04	19
+GERALD04	28
+GERALD04	20
+GERALD04	232
+SAD	231
+SAD	227
+SAD	229
+SAD	296
+MANYCHEF	122
+MANYCHEF	103
+MANYCHEF	6
+MANYCHEF	202
+LASTDIG	96
+LASTDIG	28
+LASTDIG	10
+NAME1	15
+NAME1	231
+NAME1	97
+NAME1	162
+PAIRING	46
+PAIRING	28
+PAIRING	43
+RESIST	297
+RESIST	28
+RESIST	65
+DAILY	298
+DAILY	28
+DAILY	60
+WALK	240
+WALK	231
+WALK	223
+WALK	232
+PRGIFT	15
+PRGIFT	131
+PRGIFT	231
+PRGIFT	263
+ANUWTA	15
+ANUWTA	85
+ANUWTA	231
+ANUWTA	196
+MIME2	151
+MIME2	28
+MIME2	10
+APPROX	98
+APPROX	202
+APPROX	72
+APPROX	76
+POTATOES	15
+POTATOES	12
+POTATOES	231
+POTATOES	299
+SPOON	28
+SPOON	140
+SPOON	62
+RRCODE	68
+RRCODE	231
+RRCODE	210
+PLZLYKME	203
+PLZLYKME	97
+PLZLYKME	232
+PLZLYKME	202
+NOLOGIC	15
+NOLOGIC	48
+NOLOGIC	231
+NOLOGIC	166
+CIELDIST	231
+CIELDIST	122
+CIELDIST	6
+CIELDIST	72
+RRSUM	68
+RRSUM	300
+RRSUM	72
+LEDIV	1
+LEDIV	202
+LEDIV	72
+LEDIV	4
+SUBGCD	231
+SUBGCD	294
+SUBGCD	276
+SUBGCD	2
+DIRECTI	15
+DIRECTI	231
+DIRECTI	8
+DIRECTI	10
+ARRANGE	301
+ARRANGE	28
+ARRANGE	43
+EQUATION	40
+AMMEAT	15
+AMMEAT	231
+AMMEAT	295
+AMMEAT	209
+AMMEAT	4
+OJUMPS	15
+OJUMPS	240
+OJUMPS	231
+OJUMPS	105
+RRCOPY	68
+RRCOPY	231
+RRCOPY	300
+KNIGHTMV	48
+KNIGHTMV	176
+KNIGHTMV	28
+SALARY	15
+SALARY	221
+SALARY	231
+SALARY	181
+ROWCOLOP	48
+ROWCOLOP	166
+ROWCOLOP	202
+ROWCOLOP	72
+PLAYFIT	63
+PLAYFIT	28
+PLAYFIT	218
+TACHSTCK	231
+TACHSTCK	183
+TACHSTCK	103
+TACHSTCK	209
+TACHSTCK	80
+ALEXNUMB	221
+ATTIC	15
+ATTIC	231
+ATTIC	278
+ATTIC	279
+COMMUTE	46
+COMMUTE	28
+COMMUTE	43
+DIVIDING	231
+DIVIDING	302
+DIVIDING	133
+DIVIDING	72
+LUCKY5	28
+LUCKY5	141
+LUCKY5	4
+ANUDTC	15
+ANUDTC	85
+ANUDTC	231
+ANUDTC	86
+NOCODING	248
+NOCODING	136
+NOCODING	103
+LUCKYSTR	66
+LUCKYSTR	28
+LUCKYSTR	4
+TOTR	15
+TOTR	231
+TOTR	98
+TOTR	303
+TOTR	29
+ERROR	231
+ERROR	203
+ERROR	232
+ERROR	204
+FACTSUM	34
+C2	34
+C3	34
+K3	34
+VOTING	43
+VOTING	39
+VOTING	7
+TR2	198
+TR2	174
+TR2	7
+PUZZLES	46
+PUZZLES	43
+PUZZLES	7
+SEQUENCE	50
+SEQUENCE	43
+SEQUENCE	7
+COOKOFF2	151
+COOKOFF2	7
+COOKOFF2	10
+MEANMEDI	152
+MEANMEDI	136
+MEANMEDI	7
+PARCOS	6
+PARCOS	140
+PARCOS	7
+MAXGAME	142
+MAXGAME	81
+MAXGAME	256
+MAXGAME	277
+ANDOOR	124
+ANDOOR	181
+ANDOOR	7
+ANDOOR	304
+ANDOOR	233
+NI03	224
+J1	34
+SNCK05	34
+BUILDING	88
+BUILDING	217
+BUILDING	7
+COOKOFF	45
+COOKOFF	7
+COOKOFF	10
+PDSNUM	88
+PDSNUM	63
+PDSNUM	7
+CIELBTL	154
+CIELBTL	6
+CIELBTL	7
+HOB	181
+HOB	7
+HOB	264
+HOB	29
+TRANSFIG	278
+TRANSFIG	7
+TRANSFIG	279
+TRANSFIG	101
+STRDIG	15
+STRDIG	16
+STRDIG	32
+STRDIG	17
+STRDIG	18
+IDOLS	290
+IDOLS	24
+IDOLS	129
+IDOLS	133
+IDOLS	14
+TFOSS	34
+BESTSUM	34
+G3	34
+M3	34
+ARITHPR	48
+ARITHPR	176
+ARITHPR	7
+FALLDOWN	64
+FALLDOWN	65
+FALLDOWN	7
+E4	34
+CAREFUL	298
+CAREFUL	60
+CAREFUL	7
+FLY	305
+FLY	132
+FLY	144
+FLY	7
+FLY	296
+UNFRIEND	306
+UNFRIEND	248
+UNFRIEND	136
+UNFRIEND	180
+UNFRIEND	23
+BOMBING	88
+BOMBING	7
+BOMBING	44
+PALIPALI	48
+PALIPALI	175
+PALIPALI	7
+COLCHAIN	59
+COLCHAIN	60
+COLCHAIN	7
+C5	34
+PHOTOS	43
+PARPOLY	307
+PARPOLY	143
+PARPOLY	144
+PARPOLY	6
+PARPOLY	7
+OLYMPIC	208
+OLYMPIC	28
+OLYMPIC	65
+PAINTING	297
+PAINTING	65
+PAINTING	7
+TMRATING	297
+TMRATING	65
+TMRATING	7
+DIVPRO	31
+DIVPRO	181
+DIVPRO	7
+DIVPRO	204
+UNIQUE	22
+UNIQUE	24
+UNIQUE	219
+UNIQUE	14
+UNIQUE	25
+UNIQUE	220
+UNIQUE	168
+GROUPING	48
+GROUPING	175
+GROUPING	7
+NEWREST	93
+NEWREST	7
+NEWREST	57
+FAVNUM	308
+FAVNUM	31
+FAVNUM	227
+FAVNUM	7
+FAVNUM	76
+TRAINING	297
+TRAINING	65
+TRAINING	7
+CHEFWD	289
+CHEFWD	291
+CHEFWD	2
+CHEFWD	117
+CHEFWD	189
+MACGUN	88
+MACGUN	142
+MACGUN	23
+MACGUN	155
+MACGUN	7
+CHEFHCK2	48
+CHEFHCK2	309
+CHEFHCK2	166
+CHEFHCK2	28
+MINXOR	302
+MINXOR	310
+MINXOR	133
+MINXOR	7
+MINXOR	311
+MINXOR	312
+UPDTREE	294
+UPDTREE	276
+UPDTREE	255
+UPDTREE	31
+UPDTREE	100
+UPDTREE	3
+TREES	7
+TREES	135
+TREES	36
+CHESSGM	88
+CHESSGM	94
+CHESSGM	7
+TEAMSIZE	249
+TEAMSIZE	7
+TEAMSIZE	69
+TEAMSIZE	218
+TREEFUN	158
+TREEFUN	60
+TREEFUN	23
+TREEFUN	100
+AMXOR	82
+AMXOR	143
+AMXOR	7
+AMXOR	83
+INVITES	278
+INVITES	7
+INVITES	279
+INVITES	313
+TCP	27
+TCP	314
+TCP	315
+TCP	7
+TCP	29
+KUNIQUE	93
+KUNIQUE	95
+KUNIQUE	7
+KNIGHTS	45
+KNIGHTS	7
+KNIGHTS	10
+PARALLEL	63
+PARALLEL	7
+PARALLEL	52
+LUCKYSWP	66
+LUCKYSWP	7
+LUCKYSWP	4
+PTOSS	316
+PTOSS	207
+PTOSS	3
+PTOSS	62
+JABO	252
+JABO	7
+JABO	156
+JABO	29
+AMBALLS	295
+AMBALLS	143
+AMBALLS	7
+AMBALLS	4
+TAACUTE	183
+TAACUTE	32
+TAACUTE	124
+TAACUTE	209
+TAACUTE	80
+STREGGS	115
+STREGGS	6
+STREGGS	7
+RIVPILE	283
+RIVPILE	146
+RIVPILE	6
+RIVPILE	7
+RIVPILE	26
+CIELQUIZ	154
+CIELQUIZ	6
+CIELQUIZ	7
+LUCKY9	307
+LUCKY9	2
+LUCKY9	7
+LUCKY9	156
+LUCKY9	4
+LEBLOCKS	81
+LEBLOCKS	31
+LEBLOCKS	150
+LEBLOCKS	7
+LEBLOCKS	4
+NI04	224
+RRTREE2	68
+RRTREE2	300
+RRTREE2	255
+RRTREE2	317
+RRTREE2	3
+H4	34
+CHEFPASS	248
+CHEFPASS	318
+CHEFPASS	136
+CHEFPASS	23
+CYLINDER	48
+CYLINDER	167
+CYLINDER	2
+CYLINDER	7
+ANUSAR	85
+ANUSAR	86
+ANUSAR	252
+ANUSAR	3
+ANUSAR	14
+ANUSAR	274
+ANUSAR	168
+ANUSAR	319
+LUCKG	226
+LUCKG	165
+LUCKG	272
+LUCKG	7
+LUCKG	233
+XOR	140
+XOR	7
+XOR	76
+LEFEED	295
+LEFEED	7
+LEFEED	187
+LEFEED	4
+PALIN3	302
+PALIN3	133
+PALIN3	320
+PALIN3	7
+PALIN3	220
+MEDIAN	177
+MEDIAN	7
+MEDIAN	4
+WPLAY	28
+WPLAY	190
+WPLAY	9
+WPLAY	97
+AMSEQT	13
+AMSEQT	82
+AMSEQT	143
+AMSEQT	28
+AMSEQT	83
+J3	34
+RIPPLE	217
+RIPPLE	43
+RIPPLE	7
+CHEFGIFT	115
+CHEFGIFT	7
+CHEFGIFT	218
+KCHIPS	260
+KCHIPS	65
+KCHIPS	7
+REPSTR	88
+REPSTR	7
+REPSTR	56
+LUCKY3	61
+LUCKY3	7
+LUCKY3	4
+LEBINARY	321
+LEBINARY	248
+LEBINARY	136
+LEBINARY	2
+H2	34
+TOOLS	301
+TOOLS	43
+TOOLS	7
+CHEFINV	240
+CHEFINV	194
+CHEFINV	322
+CHEFINV	7
+CHEFINV	107
+SEAGM	143
+SEAGM	236
+SEAGM	105
+SEAGM	7
+SEAGM	108
+WTHINGS	0
+WTHINGS	290
+WTHINGS	133
+WTHINGS	3
+WTHINGS	178
+JUNONGF	269
+JUNONGF	162
+JUNONGF	7
+JUNONGF	299
+JUNONGF	215
+JUNONGF	72
+TACHEMIS	183
+TACHEMIS	7
+TACHEMIS	323
+TACHEMIS	324
+TACHEMIS	80
+GANGAAM	102
+GANGAAM	28
+GANGAAM	103
+GANGAAM	83
+RSRECIPE	141
+RSRECIPE	7
+RSRECIPE	76
+HOB2	48
+HOB2	166
+HOB2	28
+HOB2	103
+PROPOSAL	34
+ACMKANPB	34
+BBSYSTEM	141
+BBSYSTEM	6
+BBSYSTEM	7
+CBARS	117
+CBARS	156
+CBARS	202
+CBARS	233
+PERMUTE	15
+PERMUTE	225
+PERMUTE	3
+PERMUTE	18
+TAUT	34
+MMADNESS	34
+EXGCD	8
+EXGCD	32
+EXGCD	215
+EXGCD	10
+CHSEQ22	32
+CHSEQ22	235
+CHSEQ22	230
+B5	34
+NUMSUM	34
+LEBOBBLE	227
+LEBOBBLE	7
+LEBOBBLE	187
+LEBOBBLE	14
+LEBOBBLE	4
+METEORAK	68
+METEORAK	143
+METEORAK	203
+METEORAK	7
+PREPARE	46
+PREPARE	43
+PREPARE	7
+CANDYGAM	31
+CANDYGAM	28
+CANDYGAM	156
+CANDYGAM	218
+LOGGERS	7
+LOGGERS	109
+LOGGERS	10
+EQUATIO	298
+EQUATIO	60
+EQUATIO	7
+LIGHT	0
+LIGHT	124
+LIGHT	78
+LIGHT	189
+LIGHT	116
+SEREJA	68
+SEREJA	71
+SEREJA	7
+SEREJA	72
+LUCKY8	15
+LUCKY8	28
+LUCKY8	144
+LUCKY8	4
+CAOS3	31
+CAOS3	32
+CAOS3	97
+CAOS3	126
+CAOS3	237
+ANUCBC	85
+ANUCBC	12
+ANUCBC	143
+ANUCBC	7
+RRTREE	68
+RRTREE	13
+RRTREE	210
+RRTREE	24
+RRTREE	129
+RRTREE	325
+RRTREE	33
+DDILEMMA	34
+RRBIGNUM	68
+RRBIGNUM	210
+RRBIGNUM	7
+RRBIGNUM	326
+TREE	28
+TREE	327
+TREE	2
+TREE	162
+TREE	116
+SEABAL	268
+SEABAL	13
+SEABAL	194
+SEABAL	7
+SEABAL	14
+SEABAL	108
+PPLUCKY	13
+PPLUCKY	243
+PPLUCKY	194
+PPLUCKY	7
+PPLUCKY	14
+PPLUCKY	4
+ANUGCD	85
+ANUGCD	223
+ANUGCD	7
+ANUGCD	145
+ANUGCD	14
+ANUTDP	85
+ANUTDP	165
+ANUTDP	309
+ANUTDP	196
+ANUTDP	255
+ANUTDP	32
+ANUTDP	209
+PPTREE	242
+PPTREE	243
+PPTREE	31
+PPTREE	3
+PPTREE	312
+PPTREE	4
+PPTREE	244
+TAKEAWAY	64
+TAKEAWAY	65
+TAKEAWAY	7
+TAKEAWAY	328
+EQUAKE	131
+EQUAKE	329
+EQUAKE	7
+EQUAKE	330
+EQUAKE	14
+FRBSUM	0
+FRBSUM	203
+FRBSUM	133
+FRBSUM	7
+FRBSUM	130
+FRBSUM	14
+SHOOTING	157
+SHOOTING	30
+SHOOTING	103
+SHOOTING	202
+SHOOTING	4
+LEMOVIE	32
+LEMOVIE	235
+LEMOVIE	4
+NI05	224
+QNUMBER	331
+QNUMBER	228
+QNUMBER	215
+QNUMBER	189
+MOU2H	131
+MOU2H	143
+MOU2H	7
+MOU2H	233
+SNCK01	34
+CHIEFETT	152
+CHIEFETT	136
+CHIEFETT	7
+CHEFGM	289
+CHEFGM	32
+CHEFGM	9
+CHEFGM	186
+TRIQUERY	190
+TRIQUERY	78
+TRIQUERY	7
+TRIQUERY	18
+MLCHEF	11
+MLCHEF	185
+MLCHEF	7
+MLCHEF	326
+MLCHEF	172
+AMSTRING	295
+AMSTRING	28
+AMSTRING	332
+AMSTRING	324
+AMSTRING	4
+TKCHOCS	260
+TKCHOCS	65
+TKCHOCS	7
+COLLECT	81
+COLLECT	225
+COLLECT	7
+COLLECT	76
+MOU1H	146
+MOU1H	219
+MOU1H	7
+MOU1H	220
+MOU1H	168
+MOU1H	233
+RRDAG	68
+RRDAG	300
+RRDAG	23
+RRDAG	7
+FUNC	309
+FUNC	150
+FUNC	7
+FUNC	215
+FUNC	204
+SEATSR	333
+SEATSR	7
+SEATSR	193
+SEATSR	108
+BLOCKING	142
+BLOCKING	23
+BLOCKING	155
+BLOCKING	116
+BICO	81
+BICO	27
+BICO	103
+BICO	202
+BICO	29
+J2	34
+SSTORY	0
+SSTORY	75
+SSTORY	246
+SSTORY	223
+SSTORY	7
+SSTORY	168
+SSTORY	334
+SQUIRREL	88
+SQUIRREL	174
+SQUIRREL	7
+CNTSOLS	268
+CNTSOLS	221
+CNTSOLS	143
+CNTSOLS	28
+CNTSOLS	269
+CNTSOLS	72
+SOLDIER	34
+WW2	294
+WW2	276
+WW2	269
+WW2	7
+ROTSTRNG	260
+ROTSTRNG	65
+ROTSTRNG	7
+ROTSTRNG	335
+KMHAMHA	119
+KMHAMHA	32
+KMHAMHA	97
+KMHAMHA	155
+KMHAMHA	126
+MBOARD	185
+MBOARD	190
+MBOARD	7
+MBOARD	116
+DIVPAIR	177
+DIVPAIR	7
+DIVPAIR	18
+TYTACTIC	278
+TYTACTIC	255
+TYTACTIC	279
+TYTACTIC	202
+ADDFRAC	114
+ADDFRAC	28
+ADDFRAC	36
+ANUBGC	85
+ANUBGC	86
+ANUBGC	31
+ANUBGC	32
+CHEFGAME	68
+CHEFGAME	167
+CHEFGAME	7
+CHEFGAME	253
+CHEFGAME	336
+CNTWAYS	221
+CNTWAYS	81
+CNTWAYS	71
+CNTWAYS	32
+LEPAINT	31
+LEPAINT	272
+LEPAINT	7
+LEPAINT	4
+CHEFHOME	177
+CHEFHOME	7
+CHEFHOME	247
+MONEY	34
+BUTTONS	34
+DIVGAME	302
+DIVGAME	32
+DIVGAME	236
+DIVGAME	133
+TSHIRTS	131
+TSHIRTS	276
+TSHIRTS	337
+TSHIRTS	143
+TSHIRTS	32
+TETRA	34
+COALSCAM	316
+COALSCAM	28
+COALSCAM	338
+COALSCAM	62
+STADIUM	34
+KNPSK	290
+KNPSK	32
+KNPSK	103
+KNPSK	133
+KNPSK	209
+SUBLCM	294
+SUBLCM	276
+SUBLCM	31
+SUBLCM	273
+SUBLCM	123
+SUBLCM	7
+PPERM	316
+PPERM	28
+PPERM	245
+PPERM	62
+STABLEMP	34
+MARCHA4	34
+RRECIPE	316
+RRECIPE	202
+RRECIPE	72
+RRECIPE	62
+NAME2	15
+NAME2	231
+NAME2	97
+NAME2	162
+SPCANDY	268
+SPCANDY	231
+SPCANDY	246
+SPCANDY	72
+TAVISUAL	15
+TAVISUAL	231
+TAVISUAL	77
+TAVISUAL	80
+MAXDIFF	167
+MAXDIFF	231
+MAXDIFF	103
+MAXDIFF	209
+MAXDIFF	218
+TIDRICE	139
+TIDRICE	28
+TIDRICE	65
+NOTATRI	34
+ANUUND	15
+ANUUND	85
+ANUUND	86
+ANUUND	28
+ANUUND	209
+POINTS	34
+RIGHTRI	16
+RIGHTRI	28
+RIGHTRI	124
+RIGHTRI	18
+MARCHA2	34
+LEBOMBS	226
+LEBOMBS	142
+LEBOMBS	231
+LEBOMBS	4
+RESQ	331
+RESQ	144
+RESQ	339
+RESQ	296
+RESQ	202
+AMSGAME1	231
+AMSGAME1	82
+AMSGAME1	340
+AMSGAME1	83
+BESTBATS	297
+BESTBATS	28
+BESTBATS	65
+DRAGNXOR	260
+DRAGNXOR	28
+DRAGNXOR	65
+JOHNY	231
+JOHNY	133
+JOHNY	186
+STONES	28
+STONES	177
+STONES	62
+LAPIN	15
+LAPIN	231
+LAPIN	225
+LAPIN	218
+REMISS	231
+REMISS	22
+REMISS	25
+CHEFLUCK	28
+CHEFLUCK	177
+CHEFLUCK	247
+SNAPE	231
+SNAPE	27
+SNAPE	124
+SNAPE	17
+SNAPE	29
+HOTEL	96
+HOTEL	28
+HOTEL	10
+LEPERMUT	15
+LEPERMUT	231
+LEPERMUT	1
+LEPERMUT	4
+NUMGAME2	137
+NUMGAME2	28
+NUMGAME2	199
+DECSTR	40
+BUYING2	15
+BUYING2	158
+BUYING2	60
+J7	34
+GCD2	34
+VOTERS	34
+CONFLIP	15
+CONFLIP	231
+CONFLIP	256
+CONFLIP	156
+CONFLIP	72
+CARVANS	231
+CARVANS	316
+CARVANS	72
+CARVANS	62
+PCYCLE	34
+COMM3	50
+COMM3	28
+COMM3	43
+HORSES	189
+HORSES	209
+HORSES	218
+BUY1GET1	15
+BUY1GET1	231
+BUY1GET1	190
+BUY1GET1	256
+CANDLE	42
+CANDLE	28
+CANDLE	10
+LECANDY	341
+LECANDY	231
+LECANDY	144
+LECANDY	4
+NUKES	34
+RECIPE	45
+RECIPE	28
+RECIPE	10
+CLEANUP	301
+CLEANUP	28
+CLEANUP	43
+EASYPROB	34
+MARCHA1	34
+MAXCOUNT	28
+MAXCOUNT	141
+MAXCOUNT	62
+CIELRCPT	231
+CIELRCPT	5
+CIELRCPT	103
+CIELRCPT	6
+CIELAB	154
+CIELAB	28
+CIELAB	6
+PRPALIN	34
+MUFFINS3	231
+MUFFINS3	8
+MUFFINS3	10
+MUFFINS3	72
+COOLING	42
+COOLING	28
+COOLING	10
+NUMGAME	36
+DOUBLE	63
+DOUBLE	28
+DOUBLE	76
+ONP	34
+PERMUT2	34
+SUMTRIAN	34
+TLG	34
+TSORT	34
+FCTRL2	34
+HOLES	48
+HOLES	49
+HOLES	28
+FCTRL	34
+INTEST	34
+HS08TEST	34
+TEST	34
+ABCSTR	15
+ABCSTR	302
+ABCSTR	133
+ABCSTR	284
+ABCSTR	202
+ANUMLA	85
+ANUMLA	196
+ANUMLA	28
+ANUMLA	103
+ANUMLA	342
+ANUMLA	343
+MULTQ3	7
+MULTQ3	135
+MULTQ3	36
+WORDS1	34
+RRFRNDS	68
+RRFRNDS	300
+RRFRNDS	23
+RRFRNDS	7
+NOKIA	208
+NOKIA	65
+NOKIA	344
+NOKIA	202
+POUR1	34
+MIXTURES	34
+FLIPCOIN	36
+TREEROOT	8
+TREEROOT	10
+TREEROOT	241
+TREEROOT	72
+ARRAYTRM	36
+PALIN	34
+TWTCLOSE	345
+TWTCLOSE	231
+TWTCLOSE	208
+TWTCLOSE	65
+MARBLES	34
+PRIME1	34
+COINS	34
+LEBOXES	24
+LEBOXES	177
+LEBOXES	4
+GTHRONES	142
+GTHRONES	346
+GTHRONES	24
+GTHRONES	155
+GTHRONES	62
+QTREE	24
+QTREE	129
+QTREE	162
+QTREE	14
+QTREE	72
+QTREE	80
+FN	347
+FN	2
+FN	3
+FN	215
+FN	126
+DAGCH	25
+SEINC	103
+SEINC	105
+SEINC	3
+SEINC	108
+SNCK03	34
+FUNCTION	301
+FUNCTION	43
+FUNCTION	24
+QUERY	190
+QUERY	24
+QUERY	129
+QUERY	130
+QUERY	76
+SPMATRIX	48
+SPMATRIX	81
+SPMATRIX	24
+SPMATRIX	225
+PARSIN	24
+PARSIN	6
+PARSIN	56
+EST	60
+EST	24
+EST	75
+EST	227
+EST	324
+KNGHTMOV	88
+KNGHTMOV	143
+KNGHTMOV	180
+KNGHTMOV	215
+KNGHTMOV	189
+MONOPLOY	348
+COT5	110
+GNUM	276
+GNUM	24
+GNUM	272
+GNUM	2
+GNUM	149
+E5	34
+H3	34
+REACHRIG	34
+DIGITS	42
+DIGITS	24
+DIGITS	10
+HBEAR	34
+HBEAR	91
+HBEAR	24
+STREDUC	88
+STREDUC	24
+STREDUC	109
+SKIRES	24
+SKIRES	95
+SKIRES	52
+TMP01	20
+TMP01	24
+TMP01	172
+TMP01	324
+TMP01	319
+SEAEQ	31
+SEAEQ	24
+SEAEQ	272
+SEAEQ	2
+SEAEQ	108
+BYTESHOP	24
+BYTESHOP	135
+BYTESHOP	36
+HAUNTED	24
+HAUNTED	10
+HAUNTED	153
+BEARS	298
+BEARS	60
+BEARS	24
+TAPAIR	349
+TAPAIR	24
+TAPAIR	203
+TAPAIR	80
+TAPAIR	244
+CNTDSETS	81
+CNTDSETS	24
+CNTDSETS	84
+CNTDSETS	203
+CNTDSETS	125
+F4	34
+N5	34
+MSTONES	41
+MSTONES	24
+MSTONES	52
+QTREE6	74
+QTREE6	24
+QTREE6	129
+QTREE6	350
+QTREE6	110
+HIGH	34
+E3	34
+POSTERS	43
+POSTERS	24
+POSTERS	174
+TSUBSTR	63
+TSUBSTR	24
+TSUBSTR	76
+STREETTA	223
+STREETTA	3
+STREETTA	14
+STREETTA	80
+F6	34
+TWOCOMP	24
+TWOCOMP	150
+TWOCOMP	351
+TWOCOMP	76
+MUFFINS	301
+MUFFINS	43
+MUFFINS	24
+TSPAGAIN	114
+TSPAGAIN	24
+TSPAGAIN	36
+DIFTRIP	71
+DIFTRIP	24
+DIFTRIP	168
+DIFTRIP	80
+AUTHEN	298
+AUTHEN	60
+AUTHEN	24
+DGCD	24
+DGCD	129
+DGCD	227
+DGCD	215
+DGCD	62
+DIGFORST	88
+DIGFORST	24
+DIGFORST	177
+CARDSHUF	24
+CARDSHUF	61
+CARDSHUF	52
+C1	34
+TKCONVEX	225
+TKCONVEX	123
+TKCONVEX	3
+TKCONVEX	116
+FARASA	112
+FARASA	24
+FARASA	146
+FARASA	2
+FARASA	108
+PRIMEDST	268
+PRIMEDST	118
+PRIMEDST	255
+PRIMEDST	112
+PRIMEDST	23
+PRIMEDST	24
+LYRC	308
+LYRC	268
+LYRC	143
+LYRC	97
+LYRC	3
+LYRC	220
+MARCHA3	34
+MARCHA6	34
+D4	34
+GERALD07	310
+GERALD07	20
+GERALD07	350
+GERALD07	223
+GERALD07	3
+COUNTARI	112
+COUNTARI	24
+COUNTARI	2
+COUNTARI	156
+COUNTARI	18
+TEAMSEL	34
+ORDERS	34
+MX	34
+CHECKERS	142
+CHECKERS	352
+CHECKERS	23
+CHECKERS	10
+BYTELE	34
+TMBOX	34
+BFORG	34
+MARCHAX	34
+BX	34
+CX	34
+KX	34
+NX	34
+STORO	34
+INTCOMB	352
+INTCOMB	43
+INTCOMB	109
+DELIVERY	352
+DELIVERY	91
+DELIVERY	43
+ALLINONE	352
+ALLINONE	43
+ALLINONE	95
+L2GRAPH	137
+L2GRAPH	352
+L2GRAPH	43
+BICKER	43
+BICKER	138
+BICKER	7
+COMPLEXT	136
+TILT	352
+TILT	10
+TILT	153
+AMBIDEX	352
+AMBIDEX	61
+AMBIDEX	10
+SMVSEVIL	352
+SMVSEVIL	141
+SMVSEVIL	10
+SIMNIM	157
+SIMNIM	352
+SIMNIM	180
+SIMNIM	60
+SIMNIM	189
+ANUMFS	85
+ANUMFS	352
+ANUMFS	191
+ANUMFS	105
+CROSSES	34
+DX	34
+GX	34
+FLOOD	34
+FLOOD	114
+FLOOD	352
+WORDNINJ	48
+WORDNINJ	352
+WORDNINJ	71
+BURNCITY	34
+CAKES	352
+CAKES	43
+CAKES	135
+CAVE	352
+CAVE	51
+CAVE	10
+BYTEFOOD	34
+GRAPHCH	40
+GRAPHCH	352
+GRAPHCH	44
+SPIN	352
+SPIN	115
+SPIN	60
+EX	34
+BLOCKS	352
+BLOCKS	39
+BLOCKS	10
+SEASNAKE	352
+SEASNAKE	172
+SEASNAKE	108
+TOURBUS	352
+TOURBUS	143
+TOURBUS	103
+TOURBUS	353
+TOURBUS	203
+TOURBUS	10
+TOURBUS	229
+SPLIT	352
+SPLIT	43
+SPLIT	94
+ADDCHAIN	48
+ADDCHAIN	352
+ADDCHAIN	227
+DARTS	352
+DARTS	106
+DARTS	120
+DARTS	150
+FACTORY	37
+FACTORY	352
+FACTORY	43
+THREECLR	352
+THREECLR	41
+THREECLR	43
+KITCHEN	352
+KITCHEN	60
+KITCHEN	53
+SEASHUF	131
+SEASHUF	352
+SEASHUF	103
+SEASHUF	353
+SEASHUF	108
+STEPAVG	352
+STEPAVG	60
+STEPAVG	57
+TOLLS	352
+TOLLS	43
+TOLLS	174
+TOMJERRY	352
+TOMJERRY	136
+TOMJERRY	140
+HX	34
+KILOWHAT	352
+KILOWHAT	181
+KILOWHAT	10
+KILOWHAT	178
+LAND	352
+LAND	60
+LAND	56
+MANYLEFT	352
+MANYLEFT	156
+MANYLEFT	354
+MANYLEFT	10
+MANYLEFT	229
+FX	34
+CLOSEST	352
+CLOSEST	136
+CLOSEST	124
+CLOSEST	144
+CLOSEST	355
+SMPAINT	352
+SMPAINT	74
+SMPAINT	31
+SMPAINT	103
+SMPAINT	353
+SMPAINT	80
+FAULT	167
+FAULT	242
+FAULT	352
+FAULT	180
+FAULT	10
+EDSTGRID	127
+LMATRIX2	221
+LMATRIX2	352
+LMATRIX2	235
+CKROACH	352
+CKROACH	6
+CKROACH	177
+DELNMS	15
+DELNMS	268
+DELNMS	352
+DELNMS	79
+DELNMS	108
+SEASOR	15
+SEASOR	352
+SEASOR	146
+SEASOR	108
+SEASOR	209
+SEASORT2	352
+SEASORT2	103
+SEASORT2	353
+SEASORT2	223
+SEASORT2	108
+SEASORT2	356
+SIMGRAPH	63
+SIMGRAPH	352
+SIMGRAPH	10
+EFFPAINT	15
+EFFPAINT	352
+EFFPAINT	190
+EFFPAINT	10
+TLCS	34
+MAXRECT	352
+MAXRECT	69
+MAXRECT	62
+CHEFPNT	240
+MINESWPR	15
+MINESWPR	165
+MINESWPR	352
+MINESWPR	191
+MINESWPR	98
+MINESWPR	10
+JX	34
+SEAPERM	12
+SEAPERM	352
+SEAPERM	108
+CHALENGE	15
+CHALENGE	157
+CHALENGE	352
+CHALENGE	191
+CHALENGE	162
+CHALENGE	10
+CHAORNOT	127
+CHAORNOT	352
+CHAORNOT	225
+GERALD09	352
+GERALD09	20
+GERALD09	103
+GERALD09	272
+FACTORIZ	352
+FACTORIZ	357
+FACTORIZ	358
+FACTORIZ	107
+FACTORIZ	108
+NSUDOKU	34
+SEAVEC	108
+B1	34
+\.
+
+
+--
+-- Data for Name: tags; Type: TABLE DATA; Schema: public; Owner: db120050032
+--
+
+COPY tags (tagid, name, description) FROM stdin;
+0	binarysearch	\N
+1	cook28	\N
+2	maths	\N
+3	medium-hard	\N
+4	witua	\N
+5	cook24	\N
+6	laycurse	\N
+7	medium	\N
+8	cook29	\N
+9	game	\N
+10	pieguy	\N
+11	adurysk	\N
+12	april14	\N
+13	bit	\N
+14	segment-tree	\N
+15	ad-hoc	\N
+16	cook37	\N
+17	implementation	\N
+18	rustinpiece	\N
+19	cook41	\N
+20	gerald	\N
+21	bitmasking	\N
+22	cook43	\N
+23	graph	\N
+24	hard	\N
+25	shiplu	\N
+26	shortest-path	\N
+27	cook45	\N
+28	easy	\N
+29	vinayak garg	\N
+30	cook49	\N
+31	dp	\N
+32	easy-medium	\N
+33	trees	\N
+34	admin	\N
+35	may10	\N
+36	syco	\N
+37	aug10	\N
+38	spooky	\N
+39	july10	\N
+40	anshuman_singh	\N
+41	feb11	\N
+42	cook03	\N
+43	friggstad	\N
+44	nov10	\N
+45	cook04	\N
+46	cook05	\N
+47	tanaeem	\N
+48	anton_lunyov	\N
+49	cook06	\N
+50	cook07	\N
+51	june11	\N
+52	thocevar	\N
+53	july11	\N
+54	aug11	\N
+55	nomind	\N
+56	oct11	\N
+57	nov11	\N
+58	cook15	\N
+59	cook16	\N
+60	gennady.korotkevich	\N
+61	jan12	\N
+62	yellow_agony	\N
+63	april12	\N
+64	cook18	\N
+65	flying_ant	\N
+66	cook22	\N
+67	cook20	\N
+68	Rubanenko	\N
+69	oct12	\N
+70	ankul_iiita	\N
+71	dec12	\N
+72	simple-math	\N
+73	burnside	\N
+74	dec13	\N
+75	hashing	\N
+76	xcwgf666	\N
+77	cook32	\N
+78	line-sweep	\N
+79	order-statistic	\N
+80	tuananh93	\N
+81	combinatorics	\N
+82	cook34	\N
+83	satej	\N
+84	inclusn-exclusn	\N
+85	anudeep2011	\N
+86	cook46	\N
+87	min-cost-flow	\N
+88	anhdq	\N
+89	chefs	\N
+90	two	\N
+91	dec10	\N
+92	subra	\N
+93	fushar	\N
+94	jan11	\N
+95	march11	\N
+96	cook14	\N
+97	kaushik_iska	\N
+98	march13	\N
+99	modulo	\N
+100	lca	\N
+101	tree	\N
+102	cook42	\N
+103	greedy	\N
+104	devuy11	\N
+105	may14	\N
+106	expectation	\N
+107	sept14	\N
+108	sereja	\N
+109	oct10	\N
+110	xiaodao	\N
+111	KADR	\N
+112	fft	\N
+113	wjmzbmr	\N
+114	april10	\N
+115	dec11	\N
+116	shangjingbo	\N
+117	matrix-expo	\N
+118	cgy4ever	\N
+119	bipartite	\N
+120	iscsi	\N
+121	maximum-flow	\N
+122	cook30	\N
+123	math	\N
+124	geometry	\N
+125	mugurelionut	\N
+126	oct13	\N
+127	ACRush	\N
+128	dzy493941464	\N
+129	heavy-light	\N
+130	persistence	\N
+131	aug14	\N
+132	graphs	\N
+133	kostya_by	\N
+134	MichaelD	\N
+135	sept10	\N
+136	gamabunta	\N
+137	april11	\N
+138	may11	\N
+139	cook10	\N
+140	march12	\N
+141	feb12	\N
+142	aug12	\N
+143	dynamic-prog	\N
+144	june12	\N
+145	prime-factor	\N
+146	july13	\N
+147	line-clipping	\N
+148	max-indep-set	\N
+149	maxflow	\N
+150	june14	\N
+151	cook09	\N
+152	cook12	\N
+153	sep11	\N
+154	cook17	\N
+155	matching	\N
+156	nov12	\N
+157	bruteforce	\N
+158	cook27	\N
+159	meet-in-middle	\N
+160	advanced-math	\N
+161	grammar-parsing	\N
+162	may13	\N
+163	regex	\N
+164	string-parsing	\N
+165	bfs	\N
+166	cook31	\N
+167	april13	\N
+168	suffix-array	\N
+169	treap	\N
+170	factorial	\N
+171	discretization	\N
+172	sept13	\N
+173	mathematics	\N
+174	june10	\N
+175	cook08	\N
+176	cook11	\N
+177	may12	\N
+178	polygons	\N
+179	vectors	\N
+180	gauss-elim	\N
+181	jan13	\N
+182	binary-tree	\N
+183	cook36	\N
+184	splay-tree	\N
+185	data-structure	\N
+186	nov13	\N
+187	probability	\N
+188	floyd-warshall	\N
+189	sep12	\N
+190	feb13	\N
+191	interactive	\N
+192	hackenbush	\N
+193	oct14	\N
+194	fenwick	\N
+195	sqrt-decomp	\N
+196	cook51	\N
+197	two-pointers	\N
+198	akhilravidas	\N
+199	nssprogrammer	\N
+200	rahulakaneo	\N
+201	re_01	\N
+202	simple	\N
+203	jan14	\N
+204	viv001	\N
+205	cook40	\N
+206	vineetpaliwal	\N
+207	kmp	\N
+208	cook23	\N
+209	sorting	\N
+210	cook38	\N
+211	explanation	\N
+212	guessing	\N
+213	guessinggame	\N
+214	calc_saransh	\N
+215	number-theory	\N
+216	ashwin_jain	\N
+217	cook01	\N
+218	vamsi_kavala	\N
+219	lcp	\N
+220	string	\N
+221	ballon_ziq	\N
+222	priority	\N
+223	march14	\N
+224	iitgfaculties	\N
+225	june13	\N
+226	adhoc	\N
+227	july12	\N
+228	kamranmaharov	\N
+229	search	\N
+230	furko	\N
+231	cakewalk	\N
+232	programming	\N
+233	witalij_hq	\N
+234	malinovsky239	\N
+235	feb14	\N
+236	game-theory	\N
+237	sprague-grundy	\N
+238	brute-force	\N
+239	jay_adm	\N
+240	berezin	\N
+241	simple-easy	\N
+242	bitwise	\N
+243	cook39	\N
+244	xor	\N
+245	sieve	\N
+246	kuruma	\N
+247	rosyish	\N
+248	cook25	\N
+249	deque	\N
+250	games	\N
+251	pointers	\N
+252	disjoint-set	\N
+253	mst	\N
+254	union-find	\N
+255	dfs	\N
+256	khadarbasha	\N
+257	combinations	\N
+258	heaps	\N
+259	enumeration	\N
+260	cook13	\N
+261	backtracking	\N
+262	prefix-sum	\N
+263	dpraveen	\N
+264	pigeonhole	\N
+265	miller-rabin	\N
+266	primenumbers	\N
+267	stzgd	\N
+268	aug13	\N
+269	exponentiation	\N
+270	offline-process	\N
+271	hash-map	\N
+272	july14	\N
+273	lcm	\N
+274	stack	\N
+275	mkagenius	\N
+276	darkshadows	\N
+277	recurrence	\N
+278	cook35	\N
+279	pragrame	\N
+280	difference-seq	\N
+281	basic-math	\N
+282	tsaplusb	\N
+283	dijkstra	\N
+284	map	\N
+285	scanline	\N
+286	divisors	\N
+287	memoization	\N
+288	dpmgc	\N
+289	div_adm	\N
+290	cook47	\N
+291	fibonacci	\N
+292	offline	\N
+293	basic-maths	\N
+294	cook50	\N
+295	cook33	\N
+296	shettynamit	\N
+297	cook21	\N
+298	cook19	\N
+299	mischievous_me	\N
+300	cook48	\N
+301	cook02	\N
+302	cook44	\N
+303	permutation	\N
+304	precision	\N
+305	functions	\N
+306	colouring	\N
+307	binomial	\N
+308	aho-corasick	\N
+309	binary-search	\N
+310	decomposition	\N
+311	sqrt	\N
+312	trie	\N
+313	tree-dp	\N
+314	integrals	\N
+315	interpolation	\N
+316	cook26	\N
+317	knapsack	\N
+318	euler-tour	\N
+319	suffix-trees	\N
+320	manacher	\N
+321	bignum	\N
+322	inversions	\N
+323	palindrome	\N
+324	strings	\N
+325	segtree	\N
+326	segment-trees	\N
+327	kirchhoff	\N
+328	takeway	\N
+329	lazy	\N
+330	pavel1996	\N
+331	factors	\N
+332	sliding-window	\N
+333	edit-distance	\N
+334	suffix-auto	\N
+335	rotstrang	\N
+336	prim	\N
+337	dp+bitmask	\N
+338	kruskal	\N
+339	prime	\N
+340	gcd	\N
+341	array	\N
+342	heap	\N
+343	multiset	\N
+344	recursion	\N
+345	array-string	\N
+346	flow	\N
+347	aekd_adm	\N
+348	utkarsh_lath	\N
+349	dfs-order	\N
+350	link-cut-tree	\N
+351	max-flow	\N
+352	challenge	\N
+353	heuristic	\N
+354	optimization	\N
+355	kd-tree	\N
+356	test-gen-plans	\N
+357	factorization	\N
+358	pollard-rho	\N
+\.
+
+
+--
+-- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: db120050032
+--
+
+COPY users (userid, handle, passwd, rank, role, personal) FROM stdin;
+6	Snovuda	Snovuda	-1	\N	\N
+9	acmkan11tm30	acmkan11tm30	-1	\N	\N
+37	elvishgiant	elvishgiant	-1	\N	\N
+17	angel21	angel21	-1	\N	\N
+18	anks24	anks24	-1	\N	\N
+44	himank77	himank77	-1	\N	\N
+26	brut3f0rc3	brut3f0rc3	3638	\N	\N
+91	sutkebablu	sutkebablu	4106	\N	\N
+95	toshurocks	toshurocks	6566	\N	\N
+1	adityaakash	aditya	1374	f	("Aditya Kumar Akash",2012-09-09,dfs,pateldeependra06@gmail.com,dsfgd)
+21	ashad	ashad	-1	\N	\N
+23	azuro	azuro	-1	\N	\N
+24	bekzhan29	bekzhan29	-1	\N	\N
+28	cho_iiith	cho_iiith	-1	\N	\N
+30	codeup444	codeup444	-1	\N	\N
+32	danish786	danish786	-1	\N	\N
+34	dexter_0968	dexter_0968	-1	\N	\N
+35	divanshujain	divanshujain	-1	\N	\N
+36	drgn_hart	drgn_hart	-1	\N	\N
+38	fallenprime	fallenprime	-1	\N	\N
+47	ishraq	ishraq	-1	\N	\N
+48	jasmeetjm	jasmeetjm	-1	\N	\N
+49	jkhan88	jkhan88	-1	\N	\N
+51	kaushik7lee	kaushik7lee	-1	\N	\N
+55	littlenobody	littlenobody	-1	\N	\N
+56	m1y3	m1y3	-1	\N	\N
+58	maverik1993	maverik1993	-1	\N	\N
+59	mezput	mezput	-1	\N	\N
+60	mnl_0407	mnl_0407	-1	\N	\N
+61	msgb	msgb	-1	\N	\N
+62	nakulvyas	nakulvyas	-1	\N	\N
+63	neerav	neerav	-1	\N	\N
+64	nikhilsid	nikhilsid	-1	\N	\N
+65	nitishsinha	nitishsinha	-1	\N	\N
+66	nupurcs	nupurcs	-1	\N	\N
+68	pavanban	pavanban	-1	\N	\N
+69	pj56	pj56	-1	\N	\N
+72	pureblood.luver	pureblood.luver	-1	\N	\N
+74	rakesh144	rakesh144	-1	\N	\N
+76	richardbann	richardbann	-1	\N	\N
+77	robinsobti	robinsobti	-1	\N	\N
+78	roy_s	roy_s	-1	\N	\N
+79	sabretooth_rog	sabretooth_rog	-1	\N	\N
+81	santosh	santosh	-1	\N	\N
+83	shakil_ruet	shakil_ruet	-1	\N	\N
+84	shimanshu	shimanshu	-1	\N	\N
+85	shub1dev_5	shub1dev_5	-1	\N	\N
+88	sowmya05	sowmya05	-1	\N	\N
+89	starfishbits	starfishbits	-1	\N	\N
+90	sukun007	sukun007	-1	\N	\N
+94	theluy	theluy	-1	\N	\N
+96	uddipta	uddipta	-1	\N	\N
+99	vindu525	vindu525	-1	\N	\N
+100	vivekjha92	vivekjha92	-1	\N	\N
+101	whateverman	whateverman	-1	\N	\N
+102	xyz24	xyz24	-1	\N	\N
+103	zardos	zardos	-1	\N	\N
+39	freek007	freek007	7141	\N	\N
+40	gauravg1	gauravg1	2213	\N	\N
+42	guraltoo	guraltoo	5719	\N	\N
+20	arijit_pande	arijit_pande	5323	\N	\N
+22	atul05kumar	atul05kumar	916	\N	\N
+50	kaboom	kaboom	2606	\N	\N
+52	kinjaldand	kinjaldand	1562	\N	\N
+53	krish_agarwal	krish_agarwal	7116	\N	\N
+57	manicodes	manicodes	2866	\N	\N
+97	va123	va123	935	\N	\N
+98	venky5556	venky5556	1572	\N	\N
+19	anujagarwal	anujagarwal	-1	\N	\N
+67	paari95	paari95	6036	\N	\N
+70	pramiti	pramiti	3583	\N	\N
+71	primorial	primorial	716	\N	\N
+73	rahul1193	rahul1193	2608	\N	\N
+80	salsreloded	salsreloded	3863	\N	\N
+82	sayantancs	sayantancs	4619	\N	\N
+86	sidran	sidran	3085	\N	\N
+27	centralspike	centralspike	4868	\N	\N
+33	deep3695	deep3695	3199	\N	\N
+10	acmkg13tm216	acmkg13tm216	-1	\N	\N
+11	acmkn12tm023	acmkn12tm023	-1	\N	\N
+12	acmkn13tm263	acmkn13tm263	-1	\N	\N
+13	agnicoders	agnicoders	-1	\N	\N
+14	akay99	akay99	-1	\N	\N
+25	bitch_please_	bitch_please_	-1	\N	\N
+29	codeddict	codeddict	-1	\N	\N
+31	crazycoders747	crazycoders747	-1	\N	\N
+45	hunny_bunny	hunny_bunny	-1	\N	\N
+3	rimcoharish	asdf	-1	f	("Harish Koilada",1995-03-13,"Andhra Pradesh",rimcoharish@cse.iitb.ac.in,"IIT Bombay")
+43	harshadagune	harshadagune	-1	\N	\N
+75	ravish	ravish	-1	\N	\N
+93	teamrush	teamrush	-1	\N	\N
+54	l____lag_gaye	l____lag_gaye	-1	\N	\N
+87	sls12	sls12	-1	\N	\N
+92	t_acm14kg0442	t_acm14kg0442	-1	\N	\N
+8	abhiraj26	abhiraj26	-1	\N	\N
+15	alexmj26	alexmj26	-1	\N	\N
+16	amir0581	amir0581	-1	\N	\N
+46	imamur	imamur	-1	\N	\N
+4	deependrapatel	deependra	1422	f	("Deependra Patel",1994-09-21,India,pateldeependra06@gmail.com,"IIT Bombay")
+5	12bit061	12bit061	3509	\N	\N
+7	aayush26	aayush26	4663	\N	\N
+41	godzilla1995	godzilla1995	-1	\N	\N
+\.
+
+
+--
+-- Data for Name: users_interests; Type: TABLE DATA; Schema: public; Owner: db120050032
+--
+
+COPY users_interests (userid, tagid) FROM stdin;
+4	0
+4	33
+\.
+
+
+--
+-- Name: users_interests_userid_seq; Type: SEQUENCE SET; Schema: public; Owner: db120050032
+--
+
+SELECT pg_catalog.setval('users_interests_userid_seq', 1, false);
+
+
+--
+-- Name: users_userid_seq; Type: SEQUENCE SET; Schema: public; Owner: db120050032
+--
+
+SELECT pg_catalog.setval('users_userid_seq', 103, true);
+
+
+--
+-- Name: attempted_pkey; Type: CONSTRAINT; Schema: public; Owner: db120050032; Tablespace: 
+--
+
+ALTER TABLE ONLY attempted
+    ADD CONSTRAINT attempted_pkey PRIMARY KEY (userid, code);
+
+
+--
+-- Name: followers_pkey; Type: CONSTRAINT; Schema: public; Owner: db120050032; Tablespace: 
+--
+
+ALTER TABLE ONLY followers
+    ADD CONSTRAINT followers_pkey PRIMARY KEY (follower, followed);
+
+
+--
+-- Name: problems_pkey; Type: CONSTRAINT; Schema: public; Owner: db120050032; Tablespace: 
+--
+
+ALTER TABLE ONLY problems
+    ADD CONSTRAINT problems_pkey PRIMARY KEY (code);
+
+
+--
+-- Name: problems_tags_pkey; Type: CONSTRAINT; Schema: public; Owner: db120050032; Tablespace: 
+--
+
+ALTER TABLE ONLY problems_tags
+    ADD CONSTRAINT problems_tags_pkey PRIMARY KEY (code, tagid);
+
+
+--
+-- Name: tags_pkey; Type: CONSTRAINT; Schema: public; Owner: db120050032; Tablespace: 
+--
+
+ALTER TABLE ONLY tags
+    ADD CONSTRAINT tags_pkey PRIMARY KEY (tagid);
+
+
+--
+-- Name: users_handle_key; Type: CONSTRAINT; Schema: public; Owner: db120050032; Tablespace: 
+--
+
+ALTER TABLE ONLY users
+    ADD CONSTRAINT users_handle_key UNIQUE (handle);
+
+
+--
+-- Name: users_pkey; Type: CONSTRAINT; Schema: public; Owner: db120050032; Tablespace: 
+--
+
+ALTER TABLE ONLY users
+    ADD CONSTRAINT users_pkey PRIMARY KEY (userid);
+
+
+--
+-- Name: attempted_code_fkey; Type: FK CONSTRAINT; Schema: public; Owner: db120050032
+--
+
+ALTER TABLE ONLY attempted
+    ADD CONSTRAINT attempted_code_fkey FOREIGN KEY (code) REFERENCES problems(code) ON DELETE CASCADE;
+
+
+--
+-- Name: attempted_userid_fkey; Type: FK CONSTRAINT; Schema: public; Owner: db120050032
+--
+
+ALTER TABLE ONLY attempted
+    ADD CONSTRAINT attempted_userid_fkey FOREIGN KEY (userid) REFERENCES users(userid) ON DELETE CASCADE;
+
+
+--
+-- Name: followers_followed_fkey; Type: FK CONSTRAINT; Schema: public; Owner: db120050032
+--
+
+ALTER TABLE ONLY followers
+    ADD CONSTRAINT followers_followed_fkey FOREIGN KEY (followed) REFERENCES users(userid) ON DELETE CASCADE;
+
+
+--
+-- Name: followers_follower_fkey; Type: FK CONSTRAINT; Schema: public; Owner: db120050032
+--
+
+ALTER TABLE ONLY followers
+    ADD CONSTRAINT followers_follower_fkey FOREIGN KEY (follower) REFERENCES users(userid) ON DELETE CASCADE;
+
+
+--
+-- Name: problems_tags_code_fkey; Type: FK CONSTRAINT; Schema: public; Owner: db120050032
+--
+
+ALTER TABLE ONLY problems_tags
+    ADD CONSTRAINT problems_tags_code_fkey FOREIGN KEY (code) REFERENCES problems(code) ON DELETE CASCADE;
+
+
+--
+-- Name: problems_tags_tagid_fkey; Type: FK CONSTRAINT; Schema: public; Owner: db120050032
+--
+
+ALTER TABLE ONLY problems_tags
+    ADD CONSTRAINT problems_tags_tagid_fkey FOREIGN KEY (tagid) REFERENCES tags(tagid) ON DELETE CASCADE;
+
+
+--
+-- Name: users_interests_tagid_fkey; Type: FK CONSTRAINT; Schema: public; Owner: db120050032
+--
+
+ALTER TABLE ONLY users_interests
+    ADD CONSTRAINT users_interests_tagid_fkey FOREIGN KEY (tagid) REFERENCES tags(tagid) ON DELETE CASCADE;
+
+
+--
+-- Name: users_interests_userid_fkey; Type: FK CONSTRAINT; Schema: public; Owner: db120050032
+--
+
+ALTER TABLE ONLY users_interests
+    ADD CONSTRAINT users_interests_userid_fkey FOREIGN KEY (userid) REFERENCES users(userid) ON DELETE CASCADE;
+
+
+--
+-- Name: public; Type: ACL; Schema: -; Owner: postgres
+--
+
+REVOKE ALL ON SCHEMA public FROM PUBLIC;
+REVOKE ALL ON SCHEMA public FROM postgres;
+GRANT ALL ON SCHEMA public TO postgres;
+GRANT ALL ON SCHEMA public TO PUBLIC;
+
+
+--
+-- PostgreSQL database dump complete
+--
+
